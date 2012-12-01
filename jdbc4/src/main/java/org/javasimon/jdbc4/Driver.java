@@ -7,9 +7,6 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Simon JDBC4 Proxy Driver.
@@ -70,11 +67,7 @@ import java.util.regex.Pattern;
  * @see java.sql.DriverManager#getConnection(String)
  * @since 2.4
  */
-public final class Driver implements java.sql.Driver {
-	/**
-	 * Name for the property holding the real driver class value.
-	 */
-	public static final String REAL_DRIVER = "simon_real_drv";
+public class Driver implements java.sql.Driver {
 
 	/**
 	 * Default hierarchy prefix for Simon JDBC driver. All Simons created by Simon JDBC
@@ -82,12 +75,12 @@ public final class Driver implements java.sql.Driver {
 	 */
 	public static final String DEFAULT_PREFIX = "org.javasimon.jdbc";
 
-	/**
-	 * Name for the driver property holding the hierarchy prefix given to JDBC Simons.
-	 */
-	public static final String PREFIX = "simon_prefix";
+    /**
+     * Prefix used for URLs
+     */
+    public static final String URL_PREFIX = "jdbc:simon:";
 
-	static {
+    static {
 		try {
 			DriverManager.registerDriver(new Driver());
 		} catch (Exception e) {
@@ -133,31 +126,32 @@ public final class Driver implements java.sql.Driver {
 			return null;
 		}
 
-		Url url = new Url(simonUrl);
-		java.sql.Driver driver = getRealDriver(url, info);
-
-		return new SimonConnection(driver.connect(url.getRealUrl(), info), url.getPrefix());
+        DriverUrl url = new DriverUrl(getUrlPrefix(), simonUrl, info);
+		java.sql.Driver realDriver = getRealDriver(url);
+        java.sql.Connection realConnection=realDriver.connect(url.getRealUrl(), url.getRealProperties());
+		return wrapConnection(realConnection, url);
 	}
-
+    protected Connection wrapConnection(Connection realConnection, DriverUrl url) {
+        return new SimonConnection(realConnection, url.getPrefix());
+    }
 	/**
 	 * Tries to determine driver class, instantiate it and register if already not registered.
 	 * For more detail look at {@link org.javasimon.jdbc4.Driver} class javadoc.
 	 *
 	 * @param url instance of url object that represents url
-	 * @param info parameters from {@link #connect(String, java.util.Properties)} method
 	 * @return instance of real driver
 	 * @throws java.sql.SQLException if real driver can't be determined or is not registerd
 	 */
-	private java.sql.Driver getRealDriver(Url url, Properties info) throws SQLException {
+	private java.sql.Driver getRealDriver(DriverUrl url) throws SQLException {
 		java.sql.Driver drv = null;
 		try {
 			drv = DriverManager.getDriver(url.getRealUrl());
 		} catch (SQLException e) {
 			// nothing, not an error
 		}
-
-		if (drv == null && info != null && info.keySet().contains(REAL_DRIVER)) {
-			drv = registerDriver(info.getProperty(REAL_DRIVER));
+        String realDriver=url.getRealDriver();
+		if (drv == null && realDriver!=null) {
+			drv = registerDriver(realDriver);
 		}
 
 		if (drv == null && url.getDriverId() != null) {
@@ -183,7 +177,7 @@ public final class Driver implements java.sql.Driver {
 	 * @return instance of registered real driver
 	 * @throws java.sql.SQLException if registration fails
 	 */
-	private java.sql.Driver registerDriver(String name) throws SQLException {
+	protected static final java.sql.Driver registerDriver(String name) throws SQLException {
 		try {
 			java.sql.Driver d = (java.sql.Driver) Class.forName(name).newInstance();
 			DriverManager.registerDriver(d);
@@ -200,7 +194,7 @@ public final class Driver implements java.sql.Driver {
 	 */
 	@Override
 	public boolean acceptsURL(String url) throws SQLException {
-		return url != null && url.toLowerCase().startsWith(Url.SIMON_JDBC);
+		return url != null && url.toLowerCase().startsWith(getUrlPrefix());
 	}
 
 	/**
@@ -235,88 +229,7 @@ public final class Driver implements java.sql.Driver {
 		return true;
 	}
 
-	/**
-	 * Class Url represents Simon JDBC url. It parses given url and than provides getters for
-	 * driver's propreties if provided or default values.
-	 *
-	 * @author Radovan Sninsky
-	 * @since 2.4
-	 */
-	static class Url {
-
-		private static final String SIMON_JDBC = "jdbc:simon";
-
-		private static final Pattern DRIVER_FROM_URL_PATTERN = Pattern.compile(SIMON_JDBC + ":(.*):.*");
-
-		private String realUrl;
-		private String driverId;
-		private String realDriver;
-		private String prefix;
-
-		/**
-		 * Class constructor, parses given URL and recognizes driver's properties.
-		 *
-		 * @param url given JDBC URL
-		 */
-		Url(String url) {
-			Matcher m = DRIVER_FROM_URL_PATTERN.matcher(url);
-			if (m.matches()) {
-				driverId = m.group(1);
-			}
-
-			StringTokenizer st = new StringTokenizer(url, ";");
-			while (st.hasMoreTokens()) {
-				String tokenPairStr = st.nextToken().trim();
-				String[] tokenPair = tokenPairStr.split("=", 2);
-				String token = tokenPair[0];
-				String tokenValue = tokenPair.length == 2 ? tokenPair[1].trim() : null;
-
-				if (tokenPairStr.startsWith("jdbc")) {
-					realUrl = tokenPairStr.replaceFirst(SIMON_JDBC, "jdbc");
-				} else if (token.equalsIgnoreCase(REAL_DRIVER)) {
-					realDriver = tokenValue;
-				} else if (token.equalsIgnoreCase(PREFIX)) {
-					prefix = tokenValue;
-				} else {
-					realUrl += ";" + tokenPairStr;
-				}
-			}
-		}
-
-		/**
-		 * Returns orignal JDBC URL without any Simon stuff.
-		 *
-		 * @return original JDBC URL
-		 */
-		public String getRealUrl() {
-			return realUrl;
-		}
-
-		/**
-		 * Returns driver identifier (eg. oracle, postgres, mysql, h2, etc.).
-		 *
-		 * @return driver identifier
-		 */
-		public String getDriverId() {
-			return driverId;
-		}
-
-		/**
-		 * Returns fully qualified class name of the real driver.
-		 *
-		 * @return driver class FQN
-		 */
-		public String getRealDriver() {
-			return realDriver;
-		}
-
-		/**
-		 * Returns prefix for hierarchy of JDBC related Simons.
-		 *
-		 * @return prefix for JDBC Simons
-		 */
-		public String getPrefix() {
-			return prefix == null ? DEFAULT_PREFIX : prefix;
-		}
-	}
+    public String getUrlPrefix() {
+        return URL_PREFIX;
+    }
 }

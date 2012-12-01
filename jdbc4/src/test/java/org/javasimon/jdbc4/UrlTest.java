@@ -4,6 +4,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 
+import java.util.Properties;
+
 /**
  * Tests for JDBC real URL detection.
  *
@@ -25,7 +27,7 @@ public class UrlTest {
 
 	@Test(dataProvider = "dp1")
 	public void urlRealUrlTest(String url, String realUrl) {
-		Assert.assertEquals(new Driver.Url(url).getRealUrl(), realUrl);
+		Assert.assertEquals(new DriverUrl(Driver.URL_PREFIX, url, new Properties()).getRealUrl(), realUrl);
 	}
 
 	@DataProvider(name = "dp2")
@@ -38,6 +40,6 @@ public class UrlTest {
 
 	@Test(dataProvider = "dp2")
 	public void urlDriverTest(String url, String driver) {
-		Assert.assertEquals(new Driver.Url(url).getDriverId(), driver);
+		Assert.assertEquals(new DriverUrl(Driver.URL_PREFIX, url, new Properties()).getDriverId(), driver);
 	}
 }

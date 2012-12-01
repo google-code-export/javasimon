@@ -42,7 +42,7 @@ public final class StopwatchTemplate<L> {
 	 *
 	 * @param split Split can be null
 	 */
-	public void stop(Split split) {
+	public static void stop(Split split) {
 		if (split != null) {
 			split.stop();
 		}

@@ -13,7 +13,7 @@ public class DelegatingProxyFactory<T> implements InvocationHandler, Delegating<
 	/**
 	 * Wrapped class and concrete implementation
 	 */
-	private final T delegate;
+	protected final T delegate;
 	/**
 	 * Main constructor
 	 * @param delegate Wrapped class and concrete implementation
@@ -64,7 +64,6 @@ public class DelegatingProxyFactory<T> implements InvocationHandler, Delegating<
 	}
 	/**
 	 * Create a proxy using given classloader and interfaces
-	 * @param classLoader Class loader
 	 * @param interfaces Interface to implement
 	 * @return Proxy
 	 */
