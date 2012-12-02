@@ -1,5 +1,6 @@
 package org.javasimon.jdbc;
 
+import java.io.Serializable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * Sample object mapped to a database table
  */
-public class Sample {
+public class Sample implements Serializable{
     private int id;
     private String name;
 
@@ -36,37 +37,28 @@ public class Sample {
     }
 
     public static void createTable(Connection connection) throws SQLException {
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            statement.executeUpdate("create table sample(id int primary key, name varchar(256))");
-        } finally {
-            H2DbUtil.close(statement);
-        }
+        H2DbUtil.execute(connection, "create table sample(id int primary key, name varchar(256))");
     }
 
     public static void dropTable(Connection connection) throws SQLException {
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            statement.executeUpdate("drop table sample");
-        } finally {
-            H2DbUtil.close(statement);
-        }
+        H2DbUtil.execute(connection, "drop table sample");
     }
 
-    public void insert(Connection connection) throws SQLException {
+    public Sample insert(Connection connection) throws SQLException {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement("insert into sample(id,name) values (?,?)");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, name);
             preparedStatement.executeUpdate();
+            return this;
         } finally {
             H2DbUtil.close(preparedStatement);
         }
     }
-
+    public static Sample insert(Connection connection, int id, String name) throws SQLException {
+        return new Sample(id, name).insert(connection);
+    }
     public Sample load(ResultSet resultSet) throws SQLException {
         id = resultSet.getInt(1);
         name = resultSet.getString(2);

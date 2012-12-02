@@ -29,7 +29,15 @@ public class H2DbUtil {
             throw new SQLException("JDBC driver not found");
         }
     }
-
+    public static void execute(Connection connection, String sql) throws SQLException {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.execute(sql);
+        } finally {
+            H2DbUtil.close(statement);
+        }
+    }
     public static DataSource createDataSource() throws SQLException {
         loadDriver();
         BoneCPConfig config = new BoneCPConfig();

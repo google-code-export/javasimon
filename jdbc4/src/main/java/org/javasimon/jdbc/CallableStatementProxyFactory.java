@@ -7,11 +7,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 
 /**
- * Created with IntelliJ IDEA.
- * User: gquintana
- * Date: 30/11/12
- * Time: 21:37
- * To change this template use File | Settings | File Templates.
+ * JDBC Proxy for {@link CallableStatement}
  */
 public class CallableStatementProxyFactory extends AbstractStatementProxyFactory<CallableStatement>{
     private final String sql;
@@ -23,10 +19,12 @@ public class CallableStatementProxyFactory extends AbstractStatementProxyFactory
     }
     protected final Object execute(DelegatingMethodInvocation<CallableStatement> methodInvocation) throws Throwable {
         Object result;
-        if (methodInvocation.getArgs().length>0) {
-            result=execute(methodInvocation, sql, sqlId);
+        if (methodInvocation.getArgCount()>0) {
+            final String sql=methodInvocation.getArgAt(0, String.class);
+            final String sqlId=proxyFactoryFactory.buildSqlId(sql);
+            result = execute(methodInvocation, sql, sqlId);
         } else {
-            result=methodInvocation.proceed();
+            result = execute(methodInvocation, sql, sqlId);
         }
         return result;
     }
