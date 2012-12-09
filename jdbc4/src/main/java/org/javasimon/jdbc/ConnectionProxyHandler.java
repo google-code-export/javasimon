@@ -6,17 +6,16 @@ import org.javasimon.proxy.DelegatingMethodInvocation;
 import java.sql.*;
 
 /**
- * Connection Proxy factory wraps JDBC connections using dynamic proxies
- * to monitor them
+ * JDBC Proxy handler for {@link Connection}
  */
-public class ConnectionProxyFactory extends JdbcProxyFactory<Connection> {
+public class ConnectionProxyHandler extends JdbcProxyHandler<Connection> {
     /**
      * Main constructor
      *
      * @param delegate Wrapped connection
      */
-    public ConnectionProxyFactory(Connection delegate, String connectionFactoryName, JdbcProxyFactoryFactory proxyFactoryFactory, Split lifeSplit) {
-        super(delegate, Connection.class, connectionFactoryName, proxyFactoryFactory, lifeSplit);
+    public ConnectionProxyHandler(Connection delegate, String connectionFactoryName, JdbcProxyFactory proxyFactory, Split lifeSplit) {
+        super(delegate, Connection.class, connectionFactoryName, proxyFactory, lifeSplit);
     }
 
     @Override
@@ -42,17 +41,17 @@ public class ConnectionProxyFactory extends JdbcProxyFactory<Connection> {
     }
     private Statement createStatement(DelegatingMethodInvocation<Connection> methodInvocation) throws Throwable {
         Statement result=(Statement) methodInvocation.proceed();
-        result=proxyFactoryFactory.wrapStatement(name, result);
+        result= proxyFactory.wrapStatement(name, result);
         return result;
     }
     private PreparedStatement prepareStatement(DelegatingMethodInvocation<Connection> methodInvocation) throws Throwable {
         PreparedStatement result=(PreparedStatement) methodInvocation.proceed();
-        result=proxyFactoryFactory.wrapPreparedStatement(name, result, methodInvocation.getArgAt(0, String.class));
+        result= proxyFactory.wrapPreparedStatement(name, result, methodInvocation.getArgAt(0, String.class));
         return result;
     }
     private CallableStatement prepareCall(DelegatingMethodInvocation<Connection> methodInvocation) throws Throwable {
         CallableStatement result=(CallableStatement) methodInvocation.proceed();
-        result=proxyFactoryFactory.wrapCallableStatement(name, result, methodInvocation.getArgAt(0, String.class));
+        result= proxyFactory.wrapCallableStatement(name, result, methodInvocation.getArgAt(0, String.class));
         return result;
     }
 }

@@ -3,6 +3,8 @@ package org.javasimon.callback.async;
 import org.javasimon.callback.Callback;
 import org.javasimon.callback.CallbackSkeleton;
 import org.javasimon.proxy.Delegating;
+import org.javasimon.proxy.ProxyFactory;
+import org.javasimon.proxy.ReflectProxyFactory;
 import org.javasimon.utils.SimonUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -16,18 +18,19 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertSame;
 
 /**
- * Unit test for {@link org.javasimon.callback.async.AsyncCallbackProxyFactory}.
+ * Unit test for {@link AsyncCallbackProxyHandler}.
  *
  * @author gerald
  */
 public class AsyncCallbackProxyTest {
 	private Callback callbackMock;
 	private Callback callbackProxy;
+	private final ProxyFactory proxyFactory=new ReflectProxyFactory();
 
 	@BeforeMethod
 	public void setUpMethod() throws Exception {
 		callbackMock = mock(Callback.class);
-		callbackProxy = new AsyncCallbackProxyFactory(callbackMock).newProxy();
+		callbackProxy = new AsyncCallbackProxyHandler(callbackMock).newProxy(proxyFactory);
 	}
 
 	/**
@@ -103,7 +106,7 @@ public class AsyncCallbackProxyTest {
 				}
 			}
 		};
-		final Callback callbackAsync = new AsyncCallbackProxyFactory(callbackReal).newProxy();
+		final Callback callbackAsync = new AsyncCallbackProxyHandler(callbackReal).newProxy(proxyFactory);
 		// Prepare injectors
 		ExecutorService executorService = java.util.concurrent.Executors.newFixedThreadPool(threadNb, new ThreadFactory() {
 			final String threadName = getClass().getName() + ".testPerformance";

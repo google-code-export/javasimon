@@ -1,23 +1,19 @@
 package org.javasimon.jdbcx;
 
 import org.javasimon.Split;
+import org.javasimon.jdbc.JdbcProxyHandler;
 import org.javasimon.jdbc.JdbcProxyFactory;
-import org.javasimon.jdbc.JdbcProxyFactoryFactory;
 import org.javasimon.proxy.DelegatingMethodInvocation;
 
 import javax.sql.PooledConnection;
 import java.sql.Connection;
 
 /**
- * Created with IntelliJ IDEA.
- * User: gquintana
- * Date: 27/11/12
- * Time: 22:39
- * To change this template use File | Settings | File Templates.
+ * JDBC proxy handler for {@link PooledConnection} and its subclasses.
  */
-public class PooledConnectionProxyFactory<T extends PooledConnection> extends JdbcProxyFactory<T> {
-    public PooledConnectionProxyFactory(T delegate, Class<T> delegateType, String name, JdbcProxyFactoryFactory proxyFactoryFactory, Split lifeSplit) {
-        super(delegate, delegateType, name, proxyFactoryFactory, lifeSplit);
+public class PooledConnectionProxyHandler<T extends PooledConnection> extends JdbcProxyHandler<T> {
+    public PooledConnectionProxyHandler(T delegate, Class<T> delegateType, String name, JdbcProxyFactory proxyFactory, Split lifeSplit) {
+        super(delegate, delegateType, name, proxyFactory, lifeSplit);
     }
 
     @Override
@@ -34,7 +30,7 @@ public class PooledConnectionProxyFactory<T extends PooledConnection> extends Jd
 
     private Connection getConnection(DelegatingMethodInvocation<T> methodInvocation) throws Throwable {
         Connection connection=(Connection) methodInvocation.proceed();
-        connection=proxyFactoryFactory.wrapConnection(name,connection);
+        connection= proxyFactory.wrapConnection(name,connection);
         return connection;
     }
 }

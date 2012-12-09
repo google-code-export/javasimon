@@ -1,6 +1,5 @@
 package org.javasimon.jdbc;
 
-import org.h2.jdbc.JdbcConnection;
 import org.javasimon.SimonManager;
 import org.javasimon.Stopwatch;
 import org.testng.annotations.AfterMethod;
@@ -11,18 +10,18 @@ import static org.testng.Assert.*;
 import java.sql.*;
 
 /**
- * Unit test for {@link ConnectionProxyFactory}
+ * Unit test for {@link ConnectionProxyHandler}
  */
-public class ConnectionProxyFactoryTest {
+public class ConnectionProxyHandlerTest {
     private Connection connection;
-    private final JdbcProxyFactoryFactory proxyFactoryFactory=new JdbcProxyFactoryFactory();
+    private final JdbcProxyFactory proxyFactory =new JdbcProxyFactory();
     private Connection wrappedConnection;
     @BeforeMethod
     public void before() throws SQLException {
         connection=H2DbUtil.before();
         H2DbUtil.beforeData(connection);
         SimonManager.clear();
-        wrappedConnection=proxyFactoryFactory.wrapConnection("org.simon.jdbc.test", connection);
+        wrappedConnection= proxyFactory.wrapConnection("org.simon.jdbc.test", connection);
     }
 // H2 Doesn't support JDBC4 operations
 //    @Test

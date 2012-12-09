@@ -44,11 +44,12 @@ public class StopwatchProxyTest {
 	private MonitoredImplementation monitoredTarget = new MonitoredImplementation();
 	private MonitorSource<DelegatingMethodInvocation<MonitoredInterface>, Stopwatch> disabledStopwatchSource
 		= DisabledMonitorSource.get();
+	private ProxyFactory proxyFactory=new ReflectProxyFactory();
 	private MonitoredInterface newMonitoredProxy(MonitorSource<DelegatingMethodInvocation<MonitoredInterface>, Stopwatch> stopwatchSource) {
-		return new StopwatchProxyFactory<MonitoredInterface>(monitoredTarget, stopwatchSource).newProxy(MonitoredInterface.class);
+		return proxyFactory.newProxy(new StopwatchProxyFactory<MonitoredInterface>(monitoredTarget, stopwatchSource),MonitoredInterface.class);
 	}
 	private MonitoredInterface newMonitoredProxy() {
-		return new StopwatchProxyFactory<MonitoredInterface>(monitoredTarget).newProxy(MonitoredInterface.class);
+		return proxyFactory.newProxy(new StopwatchProxyFactory<MonitoredInterface>(monitoredTarget),MonitoredInterface.class);
 	}
 	@BeforeMethod
 	public void beforeMethod() {

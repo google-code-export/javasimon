@@ -3,32 +3,30 @@ package org.javasimon.jdbcx;
 import org.javasimon.SimonManager;
 import org.javasimon.Stopwatch;
 import org.javasimon.jdbc.H2DbUtil;
-import org.javasimon.jdbc.JdbcProxyFactoryFactory;
+import org.javasimon.jdbc.JdbcProxyFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
- * Unit test for {@link org.javasimon.jdbcx.DataSourceProxyFactory}
+ * Unit test for {@link DataSourceProxyHandler}
  */
-public class DataSourceProxyFactoryTest {
+public class DataSourceProxyHandlerTest {
     private DataSource dataSource;
-    private final JdbcProxyFactoryFactory proxyFactoryFactory=new JdbcProxyFactoryFactory();
+    private final JdbcProxyFactory proxyFactory =new JdbcProxyFactory();
     private DataSource wrappedDataSource;
     private Connection wrappedConnection;
     @BeforeMethod
     public void before() throws SQLException {
         dataSource=H2DbUtil.createDataSource();
-        wrappedDataSource=proxyFactoryFactory.wrapDataSource("org.simon.jdbc.test", dataSource);
+        wrappedDataSource= proxyFactory.wrapDataSource("org.simon.jdbc.test", dataSource);
         SimonManager.clear();
     }
     @Test
@@ -44,6 +42,7 @@ public class DataSourceProxyFactoryTest {
     @AfterMethod
     public void after() throws SQLException {
         H2DbUtil.after(wrappedConnection);
+		H2DbUtil.close(dataSource);
         wrappedConnection=null;
     }
 }

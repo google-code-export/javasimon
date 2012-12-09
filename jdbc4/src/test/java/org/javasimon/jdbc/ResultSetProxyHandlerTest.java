@@ -12,11 +12,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
- * Unit test for {@link ResultSetProxyFactory}
+ * Unit test for {@link ResultSetProxyHandler}
  */
-public class ResultSetProxyFactoryTest {
+public class ResultSetProxyHandlerTest {
     private Connection connection;
-    private final JdbcProxyFactoryFactory proxyFactoryFactory = new JdbcProxyFactoryFactory();
+    private final JdbcProxyFactory proxyFactory = new JdbcProxyFactory();
     private Connection wrappedConnection;
     private PreparedStatement wrappedStatement;
 
@@ -24,7 +24,7 @@ public class ResultSetProxyFactoryTest {
     public void before() throws SQLException {
         connection = H2DbUtil.before();
         H2DbUtil.beforeData(connection);
-        wrappedConnection = proxyFactoryFactory.wrapConnection("org.simon.jdbc.test", connection);
+        wrappedConnection = proxyFactory.wrapConnection("org.simon.jdbc.test", connection);
         SimonManager.clear();
     }
 

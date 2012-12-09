@@ -2,12 +2,13 @@ package org.javasimon.jdbc;
 
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
-import org.h2.Driver;
 
 import javax.sql.DataSource;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Util methods to manage test database: open/release connections...
@@ -49,8 +50,7 @@ public class H2DbUtil {
 
     private static Connection createConnection() throws SQLException {
         loadDriver();
-        Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        return connection;
+        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
     public static Connection before() throws SQLException {
@@ -63,12 +63,18 @@ public class H2DbUtil {
         new Sample(2, "Bar").insert(connection);
         new Sample(3, "Qix").insert(connection);
     }
+	public static void fillData(Connection connection, int size) throws SQLException {
+		for(int i=0;i<size;i++) {
+			new Sample(100+i,"Data #"+i).insert(connection);
+		}
+	}
 
-    public static void afterData(Connection connection) throws SQLException {
+	public static void afterData(Connection connection) throws SQLException {
         Connection lConnection=connection;
         boolean newConnection=false;
         if (lConnection==null) {
             lConnection=createConnection();
+			newConnection=true;
         }
         Sample.dropTable(lConnection);
         if (newConnection) {

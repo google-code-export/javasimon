@@ -14,9 +14,9 @@ import static org.testng.Assert.assertNotNull;
 /**
  *
  */
-public class CallableStatementProxyFactoryTest {
+public class CallableStatementProxyHandlerTest {
     private Connection connection;
-    private final JdbcProxyFactoryFactory proxyFactoryFactory=new JdbcProxyFactoryFactory();
+    private final JdbcProxyFactory proxyFactory =new JdbcProxyFactory();
     private Connection wrappedConnection;
     private CallableStatement wrappedStatement;
     @BeforeMethod
@@ -24,7 +24,7 @@ public class CallableStatementProxyFactoryTest {
         connection=H2DbUtil.before();
         H2DbUtil.beforeData(connection);
         H2DbUtil.execute(connection, "CREATE ALIAS INSERT_SAMPLE FOR \""+Sample.class.getName()+".insert\";");
-        wrappedConnection=proxyFactoryFactory.wrapConnection("org.simon.jdbc.test", connection);
+        wrappedConnection= proxyFactory.wrapConnection("org.simon.jdbc.test", connection);
     }
     @Test
     public void testClose()throws SQLException {

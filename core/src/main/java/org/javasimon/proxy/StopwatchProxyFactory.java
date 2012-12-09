@@ -10,12 +10,12 @@ import org.javasimon.source.StopwatchTemplate;
  * monitor how its performance.
  * Sample usage:
  * <pre>
- * MonitoredInterface monitoredProxy=new StopwatchProxyFactory(monitoredImplementation).newProxy(MonitoredInterface.class);</pre>
+ * MonitoredInterface monitoredProxy=proxyFactory.newProxy(new StopwatchProxyHandler(monitoredImplementation),MonitoredInterface.class);</pre>
  * or
  * <pre>
- * MonitoredInterface monitoredProxy=new StopwatchProxyFactory(monitoredImplementation, new CustomProxyStopwatchSource<MonitoredInterface>()).newProxy(MonitoredInterface.class);</pre>
+ * MonitoredInterface monitoredProxy=proxyFactory.newProxy(new StopwatchProxyFactory(monitoredImplementation, new CustomProxyStopwatchSource<MonitoredInterface>()),MonitoredInterface.class);</pre>
  */
-public final class StopwatchProxyFactory<T> extends DelegatingProxyFactory<T> {
+public final class StopwatchProxyFactory<T> extends DelegatingProxyHandler<T> {
 	/**
 	 * Stopwatch template.
 	 */

@@ -1,15 +1,17 @@
 package org.javasimon.callback.async;
 
 import java.lang.reflect.Method;
+
 import org.javasimon.SimonManager;
 import org.javasimon.callback.Callback;
 import org.javasimon.proxy.Delegating;
 import org.javasimon.proxy.DelegatingMethodInvocation;
+import org.javasimon.proxy.ProxyFactory;
 
 /**
  * Callback factory, produces a callback wrapper to make any callback asynchronous.
  * 
- * Example: {@code Callback myAsyncCallback=new AsyncCallbackProxy(myCallback).newProxy(); }
+ * Example: {@code Callback myAsyncCallback=new AsyncCallbackProxyHandler(myCallback).newProxy(proxyFactory); }
  * 
  * The purpose of this wrapping callback is to prevent the wrapped callback
  * from being executed on the main thread. This can be useful when a concrete
@@ -20,7 +22,7 @@ import org.javasimon.proxy.DelegatingMethodInvocation;
  * 
  * @author gerald
  */
-public final class AsyncCallbackProxyFactory extends ExecutorProxyFactory<Callback> {
+public final class AsyncCallbackProxyHandler extends ExecutorProxyHandler<Callback> {
 	/**
 	 * Interfaces implemented by callback proxy
 	 */
@@ -30,7 +32,7 @@ public final class AsyncCallbackProxyFactory extends ExecutorProxyFactory<Callba
 	 * Constructor
 	 * @param delegate Wrapped object
 	 */
-	public AsyncCallbackProxyFactory(Callback delegate) {
+	public AsyncCallbackProxyHandler(Callback delegate) {
 		super(delegate);
 		getDelegateMethod=findGetDelegateMethod();
 	}
@@ -40,7 +42,7 @@ public final class AsyncCallbackProxyFactory extends ExecutorProxyFactory<Callba
 	 * @param delegate Wrapped object
 	 * @param executor Executor used to run callback method, see {@link Executors}
 	 */
-	public AsyncCallbackProxyFactory(Callback delegate, Executor executor) {
+	public AsyncCallbackProxyHandler(Callback delegate, Executor executor) {
 		super(delegate, executor);
 		getDelegateMethod=findGetDelegateMethod();
 	}
@@ -59,21 +61,22 @@ public final class AsyncCallbackProxyFactory extends ExecutorProxyFactory<Callba
 	}
 	/**
 	 * Creates a callback proxy.
+	 * @param proxyFactory Factory of proxies
 	 * @param classLoader Class loader
 	 * @return Callback proxy.
 	 */
-	public Callback newProxy(ClassLoader classLoader) {
-		return (Callback) newProxy(classLoader, PROXY_INTERFACES);
+	public Callback newProxy(ProxyFactory proxyFactory, ClassLoader classLoader) {
+		return (Callback) proxyFactory.newProxy(this, classLoader, PROXY_INTERFACES);
 	}
 
 	/**
 	 * Creates a callback proxy.
 	 * The class loader for current thread is used as default class loader.
-	 * @param classLoader Class loader
+	 * @param proxyFactory Factory of proxies
 	 * @return Callback proxy.
 	 */
-	public Callback newProxy() {
-		return (Callback) newProxy(PROXY_INTERFACES);
+	public Callback newProxy(ProxyFactory proxyFactory) {
+		return (Callback) proxyFactory.newProxy(this, PROXY_INTERFACES);
 	}
 	@Override
 	protected Object invoke(DelegatingMethodInvocation<Callback> delegatingMethodInvocation) throws Throwable {

@@ -7,49 +7,49 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
- * Created with IntelliJ IDEA.
- * User: gquintana
- * Date: 30/11/12
- * Time: 23:27
- * To change this template use File | Settings | File Templates.
+ * Unit test for {@link PreparedStatementProxyHandler}
  */
-public class StatementProxyFactoryTest {
+public class PreparedStatementProxyHandlerTest {
     private Connection connection;
-    private final JdbcProxyFactoryFactory proxyFactoryFactory=new JdbcProxyFactoryFactory();
+    private final JdbcProxyFactory proxyFactory =new JdbcProxyFactory();
     private Connection wrappedConnection;
-    private Statement wrappedStatement;
+    private PreparedStatement wrappedStatement;
     @BeforeMethod
     public void before() throws SQLException {
         connection=H2DbUtil.before();
         H2DbUtil.beforeData(connection);
-        wrappedConnection=proxyFactoryFactory.wrapConnection("org.simon.jdbc.test", connection);
+        wrappedConnection= proxyFactory.wrapConnection("org.simon.jdbc.test", connection);
     }
     @Test
     public void testClose()throws SQLException {
-        wrappedStatement =wrappedConnection.createStatement();
-        Stopwatch stopwatch=((Stopwatch) SimonManager.getSimon("org.simon.jdbc.test.stmt"));
+        wrappedStatement =wrappedConnection.prepareStatement("select * from sample where id=?");
+        Stopwatch stopwatch=((Stopwatch) SimonManager.getSimon("org.simon.jdbc.test.select_0efff369e5047a4b9fe9379c3b929b01dbca35a4.stmt"));
         assertNotNull(stopwatch);
-        assertEquals(stopwatch.getActive(),1);
+        assertEquals(stopwatch.getActive(), 1);
         H2DbUtil.close(wrappedStatement);
-        assertEquals(stopwatch.getActive(),0);
+        assertEquals(stopwatch.getActive(), 0);
         wrappedStatement=null;
     }
     @Test
     public void testExecute()throws SQLException {
-        wrappedStatement =wrappedConnection.createStatement();
-        wrappedStatement.execute("select * from sample");
-        Stopwatch stopwatch=((Stopwatch) SimonManager.getSimon("org.simon.jdbc.test.select_d90991bb8c08a7c17c78439f05c47413a4ceb7cb.exec"));
+        wrappedStatement =wrappedConnection.prepareStatement("select * from sample where id=?");
+        wrappedStatement.setInt(1,1);
+        H2DbUtil.close(wrappedStatement.executeQuery());
+        Stopwatch stopwatch=((Stopwatch) SimonManager.getSimon("org.simon.jdbc.test.select_0efff369e5047a4b9fe9379c3b929b01dbca35a4.exec"));
         assertNotNull(stopwatch);
-        assertEquals(stopwatch.getNote(), "select * from sample");
         assertEquals(stopwatch.getCounter(), 1);
+        wrappedStatement.setInt(1,1);
+        H2DbUtil.close(wrappedStatement.executeQuery());
+        assertEquals(stopwatch.getCounter(), 2);
     }
+
     @AfterMethod
     public void after() throws SQLException {
         H2DbUtil.close(wrappedStatement);

@@ -60,7 +60,7 @@ public final class DriverUrl {
 
                     if (isSimonProperty(token)
                             && !properties.containsKey(token)) {
-                        properties.setProperty(token, tokenValue);
+                        properties.setProperty(token, tokenValue.isEmpty()?null:tokenValue);
                         keep=false;
                     }
                 }

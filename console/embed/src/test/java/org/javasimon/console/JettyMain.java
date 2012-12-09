@@ -8,13 +8,15 @@ import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 import org.javasimon.callback.CompositeCallback;
 import org.javasimon.callback.CompositeCallbackImpl;
-import org.javasimon.callback.async.AsyncCallbackProxyFactory;
+import org.javasimon.callback.async.AsyncCallbackProxyHandler;
 import org.javasimon.callback.calltree.CallTreeCallback;
 import org.javasimon.callback.quantiles.AutoQuantilesCallback;
 import org.javasimon.callback.timeline.TimelineCallback;
 import org.javasimon.console.plugin.CallTreeDetailPlugin;
 import org.javasimon.console.plugin.QuantilesDetailPlugin;
 import org.javasimon.console.plugin.TimelineDetailPlugin;
+import org.javasimon.proxy.ProxyFactory;
+import org.javasimon.proxy.ReflectProxyFactory;
 import org.javasimon.utils.SimonUtils;
 
 import java.util.Timer;
@@ -58,7 +60,8 @@ public class JettyMain {
         // compositeCallback.addCallback(new FixedQuantilesCallback(0L, 200L, 5));
         // TimelineCallback 10 time range buckets of 1 minute each
         compositeCallback.addCallback(new TimelineCallback(10, 60000L));
-        SimonManager.callback().addCallback(new AsyncCallbackProxyFactory(compositeCallback).newProxy());
+		ProxyFactory proxyFactory=new ReflectProxyFactory();
+        SimonManager.callback().addCallback(new AsyncCallbackProxyHandler(compositeCallback).newProxy(proxyFactory));
         // CallTreeCallback doesn't support asynchronism
         SimonManager.callback().addCallback(new CallTreeCallback(50));
         // Simon Servlet
