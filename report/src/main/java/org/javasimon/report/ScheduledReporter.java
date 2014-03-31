@@ -311,7 +311,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 
 	/**
 	 * Stop the reporter.
-	 * If reporter has already been stoped  it will cause <code>IllegalStateException</code>.
+	 * If reporter has already been stopped  it will cause <code>IllegalStateException</code>.
 	 *
 	 * @throws java.lang.IllegalStateException if the reporter has already been started
 	 */

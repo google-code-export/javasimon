@@ -26,9 +26,9 @@ public class ConsoleReporterExample {
 		Manager manager = SimonManager.manager();
 
 		// Simons to collect measures
-		Stopwatch s1 = manager.getStopwatch("stopwatch1");
-		Stopwatch s2 = manager.getStopwatch("stopwatch2");
-		Counter counter = manager.getCounter("counter");
+		Stopwatch s1 = manager.getStopwatch("example.stopwatch1");
+		Stopwatch s2 = manager.getStopwatch("example.stopwatch2");
+		Counter counter = manager.getCounter("example.counter");
 
 		Random random = new Random();
 		while (true) {
