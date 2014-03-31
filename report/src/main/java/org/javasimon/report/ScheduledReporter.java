@@ -1,11 +1,14 @@
 package org.javasimon.report;
 
 import org.javasimon.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.*;
 
 /**
  * Base class for reporters that periodically report current Simons state to external source.
@@ -23,276 +26,301 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class ScheduledReporter<R extends ScheduledReporter> {
 
-    static final long DEFAULT_DURATION = 1;
-    static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MINUTES;
-    public static final String DEFAULT_INCREMENT_KEY = "scheduledReporter";
+	private static final Logger logger = LoggerFactory.getLogger(ScheduledReporter.class);
 
-    /** Manager for which reporting is done */
-    private Manager manager;
+	static final long DEFAULT_DURATION = 1;
+	static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MINUTES;
+	public static final String DEFAULT_INCREMENT_KEY = "scheduledReporter";
 
-    /** Executor service that is periodically executes reporting task */
-    private ScheduledExecutorService executorService;
+	/** Manager for which reporting is done */
+	private Manager manager;
 
-    /** Duration of a time period between consecutive reportings */
-    private long duration;
+	/** Executor service that is periodically executes reporting task */
+	private ScheduledExecutorService executorService;
 
-    /** Time unit of period */
-    private TimeUnit timeUnit;
+	/** Duration of a time period between consecutive reports */
+	private long duration;
 
-    /** Locale used to output the report data */
-    private Locale locale;
+	/** Time unit of period */
+	private TimeUnit timeUnit;
 
-    /** Filter to report only subset of existing Simons */
-    private SimonFilter filter;
+	/** Locale used to output the report data */
+	private Locale locale;
 
-    /** Future object for the reporting Runnable */
-    private ScheduledFuture<?> scheduledFuture;
+	/** Filter to report only subset of existing Simons */
+	private SimonFilter filter;
 
-    /** Name of current reporter */
-    private String name;
+	/** Future object for the reporting Runnable */
+	private ScheduledFuture<?> scheduledFuture;
 
-    /**
-     * Create ScheduledReporter for a specified manager. Also sets the following default values:
-     * <ul>
-     *     <li>Set <code>duration</code> to default value</li>
-     *     <li>Set <code>timeUnit</code> to default value</li>
-     *     <li>Set <code>locale</code> to systemwide default locale</li>
-     *     <li>Set <code>filter</code> that accepts all Simons</li>
-     * </ul>
-     *
-     * @param manager
-     */
-    protected ScheduledReporter(Manager manager) {
-        setManager(manager);
-        every(DEFAULT_DURATION, DEFAULT_TIME_UNIT);
-        name(DEFAULT_INCREMENT_KEY);
-        locale(Locale.getDefault());
-        filter(SimonPattern.create("*"));
-    }
+	/** Name of current reporter */
+	private String name;
 
-    /**
-     * Set period of reporting.
-     *
-     * @param duration duration of a period
-     * @param timeUnit timeunit of a period
-     * @return scheduled reporter instance
-     */
-    public R every(long duration, TimeUnit timeUnit) {
-        setDuration(duration);
-        setTimeUnit(timeUnit);
-        return (R) this;
-    }
+	/**
+	 * Create ScheduledReporter for a specified manager. Also sets the following default values:
+	 * <ul>
+	 *     <li>Set <code>duration</code> to default value</li>
+	 *     <li>Set <code>timeUnit</code> to default value</li>
+	 *     <li>Set <code>locale</code> to system wide default locale</li>
+	 *     <li>Set <code>filter</code> that accepts all Simons</li>
+	 * </ul>
+	 *
+	 * @param manager
+	 */
+	protected ScheduledReporter(Manager manager) {
+		setManager(manager);
+		every(DEFAULT_DURATION, DEFAULT_TIME_UNIT);
+		name(DEFAULT_INCREMENT_KEY);
+		locale(Locale.getDefault());
+		filter(SimonPattern.create("*"));
+		setExecutorService(createExecutorService());
+	}
 
-    private void setDuration(long duration) {
-        if (duration <= 0) {
-            throw new IllegalArgumentException("Duration should be positive");
-        }
+	private ScheduledExecutorService createExecutorService() {
+		ThreadFactory threadFactory = new ThreadFactory() {
 
-        this.duration = duration;
-    }
+			private long threadNum = 0;
 
-    private void setTimeUnit(TimeUnit timeUnit) {
-        if (timeUnit == null) {
-            throw new IllegalArgumentException("Time unit should not be null");
-        }
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread thread = new Thread(r, name + "-scheduledReporter-" + threadNum);
+				thread.setDaemon(true);
+				return thread;
+			}
+		};
 
-        this.timeUnit = timeUnit;
-    }
+		return Executors.newSingleThreadScheduledExecutor(threadFactory);
+	}
 
-    /**
-     * Get duration of the reporting period.
-     *
-     * @return duration of the reporting period
-     */
-    public long getDuration() {
-        return duration;
-    }
+	/**
+	 * Set period of reporting.
+	 *
+	 * @param duration duration of a period
+	 * @param timeUnit timeunit of a period
+	 * @return scheduled reporter instance
+	 */
+	public R every(long duration, TimeUnit timeUnit) {
+		setDuration(duration);
+		setTimeUnit(timeUnit);
+		return (R) this;
+	}
 
-    /**
-     * Get time unit of the reporting period.
-     *
-     * @return time unit of the reporting period
-     */
-    public TimeUnit getTimeUnit() {
-        return timeUnit;
-    }
+	private void setDuration(long duration) {
+		if (duration <= 0) {
+			throw new IllegalArgumentException("Duration should be positive");
+		}
 
-    /**
-     * Get locale.
-     * @return locale used by the reporter
-     */
-    public Locale getLocale() {
-        return locale;
-    }
+		this.duration = duration;
+	}
 
-    /**
-     * Set locale used by the reporter.
-     *
-     * @param locale locale used by the reporter
-     * @return this scheduled reporter
-     */
-    public R locale(Locale locale) {
-        if (locale == null) {
-            throw new IllegalArgumentException("Locale should not be null");
-        }
+	private void setTimeUnit(TimeUnit timeUnit) {
+		if (timeUnit == null) {
+			throw new IllegalArgumentException("Time unit should not be null");
+		}
 
-        this.locale = locale;
-        return (R) this;
-    }
+		this.timeUnit = timeUnit;
+	}
 
-    /**
-     * Get filter that is used to select a subset of Simons to report about.
-     * @return filter that is used to select a subset of Simons to report about
-     */
-    public SimonFilter getFilter() {
-        return filter;
-    }
+	/**
+	 * Get duration of the reporting period.
+	 *
+	 * @return duration of the reporting period
+	 */
+	public long getDuration() {
+		return duration;
+	}
 
-    /**
-     * Set filter that will be used to select subset of Simons to report about.
-     * Only Simons that will be passed by the specified filter will be used during reporting.
-     *
-     * @param filter that
-     * @return
-     */
-    public R filter(SimonFilter filter) {
-        this.filter = filter;
-        return (R) this;
-    }
+	/**
+	 * Get time unit of the reporting period.
+	 *
+	 * @return time unit of the reporting period
+	 */
+	public TimeUnit getTimeUnit() {
+		return timeUnit;
+	}
 
-    /**
-     * Set manager instance.
-     * @param manager manager instance
-     */
-    void setManager(Manager manager) {
-        if (manager == null) {
-            throw new IllegalArgumentException("Manager should not be null");
-        }
+	/**
+	 * Get locale.
+	 * @return locale used by the reporter
+	 */
+	public Locale getLocale() {
+		return locale;
+	}
 
-        this.manager = manager;
-    }
+	/**
+	 * Set locale used by the reporter.
+	 *
+	 * @param locale locale used by the reporter
+	 * @return this scheduled reporter
+	 */
+	public R locale(Locale locale) {
+		if (locale == null) {
+			throw new IllegalArgumentException("Locale should not be null");
+		}
 
-    protected Manager getManager() {
-        return manager;
-    }
+		this.locale = locale;
+		return (R) this;
+	}
 
-    ScheduledExecutorService getExecutorService() {
-        return executorService;
-    }
+	/**
+	 * Get filter that is used to select a subset of Simons to report about.
+	 * @return filter that is used to select a subset of Simons to report about
+	 */
+	public SimonFilter getFilter() {
+		return filter;
+	}
 
-    /**
-     * Set an instance of executor service that will be used by the reporter.
-     * @param executorService instance of executor service that will be used by the reporter.
-     * @return this scheduled reporter
-     */
-    R setExecutorService(ScheduledExecutorService executorService) {
-        if (executorService == null) {
-            throw new IllegalArgumentException("Executor service should be not null");
-        }
+	/**
+	 * Set filter that will be used to select subset of Simons to report about.
+	 * Only Simons that will be passed by the specified filter will be used during reporting.
+	 *
+	 * @param filter that
+	 * @return
+	 */
+	public R filter(SimonFilter filter) {
+		this.filter = filter;
+		return (R) this;
+	}
 
-        this.executorService = executorService;
-        return (R) this;
-    }
+	/**
+	 * Set manager instance.
+	 * @param manager manager instance
+	 */
+	void setManager(Manager manager) {
+		if (manager == null) {
+			throw new IllegalArgumentException("Manager should not be null");
+		}
 
-    /**
-     * Set name of the reporter.
-     *
-     * @param name name of the reporter
-     * @return this scheduled reporter
-     */
-    public R name(String name) {
-        this.name = name;
-        return (R) this;
-    }
+		this.manager = manager;
+	}
 
-    /**
-     * Get name of this reporter.
-     *
-     * @return name of this reporter
-     */
-    public String getName() {
-        return name;
-    }
+	protected Manager getManager() {
+		return manager;
+	}
 
-    /**
-     * Runnable that is submitted to ScheduledExecutorService.
-     */
-    class ReporterRunnable implements Runnable {
-        public void run() {
-           Collection<Simon> simons = manager.getSimons(filter);
-            List<CounterSample> counterSamples = new ArrayList<CounterSample>();
-            List<StopwatchSample> stopwatchSamples = new ArrayList<StopwatchSample>();
+	ScheduledExecutorService getExecutorService() {
+		return executorService;
+	}
 
-            for (Simon simon : simons) {
-                if (simon instanceof Counter) {
-                    CounterSample counterSample = ((Counter) simon).sampleIncrement(name);
-                    if (incrementSample(counterSample)) {
-                        counterSample.setName(simon.getName());
-                        counterSamples.add(counterSample);
-                    }
-                } else {
-                    StopwatchSample stopwatchSample = ((Stopwatch) simon).sampleIncrement(name);
-                    if (incrementSample(stopwatchSample)) {
-                        stopwatchSample.setName(simon.getName());
-                        stopwatchSamples.add(stopwatchSample);
-                    }
-                }
-            }
+	/**
+	 * Set an instance of executor service that will be used by the reporter.
+	 * @param executorService instance of executor service that will be used by the reporter.
+	 * @return this scheduled reporter
+	 */
+	R setExecutorService(ScheduledExecutorService executorService) {
+		if (executorService == null) {
+			throw new IllegalArgumentException("Executor service should be not null");
+		}
 
-            report(stopwatchSamples, counterSamples);
-        }
+		this.executorService = executorService;
+		return (R) this;
+	}
 
-        private boolean incrementSample(StopwatchSample stopwatchSample) {
-            return stopwatchSample.getName() == null;
-        }
+	/**
+	 * Set name of the reporter.
+	 *
+	 * @param name name of the reporter
+	 * @return this scheduled reporter
+	 */
+	public R name(String name) {
+		this.name = name;
+		return (R) this;
+	}
 
-        private boolean incrementSample(CounterSample counterSample) {
-            return counterSample.getName() == null;
-        }
-    }
+	/**
+	 * Get name of this reporter.
+	 *
+	 * @return name of this reporter
+	 */
+	public String getName() {
+		return name;
+	}
 
-    ReporterRunnable createReporterRunner() {
-        return new ReporterRunnable();
-    }
+	/**
+	 * Runnable that is submitted to ScheduledExecutorService.
+	 */
+	class ReporterRunnable implements Runnable {
+		public void run() {
+			try {
+				Collection<Simon> simons = manager.getSimons(filter);
+				List<CounterSample> counterSamples = new ArrayList<CounterSample>();
+				List<StopwatchSample> stopwatchSamples = new ArrayList<StopwatchSample>();
 
-    /**
-     * Method that is called when reporting should be done. Only Simons that pass filter specified during
-     * the reporter construction.
-     *
-     * @param stopwatchSamples stopwatches to report
-     * @param counterSamples counters to report
-     */
-    protected abstract void report(List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples);
+				for (Simon simon : simons) {
+					if (simon instanceof Counter) {
+						CounterSample counterSample = ((Counter) simon).sampleIncrement(name);
+						if (incrementSample(counterSample)) {
+							counterSample.setName(simon.getName());
+							counterSamples.add(counterSample);
+						}
+					} else if (simon instanceof Stopwatch) {
+						StopwatchSample stopwatchSample = ((Stopwatch) simon).sampleIncrement(name);
+						if (incrementSample(stopwatchSample)) {
+							stopwatchSample.setName(simon.getName());
+							stopwatchSamples.add(stopwatchSample);
+						}
+					}
+					// Ignore Simons of other types (e.g. UnknownSimon)
+				}
 
-    /**
-     * Start the reporter.
-     * If reporter has already been started it will cause <code>IllegalStateException</code>.
-     *
-     * @throws java.lang.IllegalStateException if the reporter has already been started
-     */
-    public synchronized void start() {
-        if (scheduledFuture == null || scheduledFuture.isCancelled()) {
-            ReporterRunnable reporterRunner = createReporterRunner();
+				report(stopwatchSamples, counterSamples);
+			} catch (RuntimeException e) {
+				logger.error("Exception is scheduled reporter Runner. ", e);
+				throw e;
+			}
+		}
 
-            // we execute Runnable immediately to create incremental Simon
-            scheduledFuture = executorService.scheduleWithFixedDelay(reporterRunner, 0, duration, timeUnit);
-        } else {
-            throw new IllegalStateException("Reporter has already been started");
-        }
-    }
+		private boolean incrementSample(StopwatchSample stopwatchSample) {
+			return stopwatchSample.getName() == null;
+		}
 
-    /**
-     * Stop the reporter.
-     * If reporter has already been stoped  it will cause <code>IllegalStateException</code>.
-     *
-     * @throws java.lang.IllegalStateException if the reporter has already been started
-     */
-    public synchronized void stop() {
-        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
-            boolean interruptIfRunning = false;
-            scheduledFuture.cancel(interruptIfRunning);
-        } else {
-            throw new IllegalStateException("Reporter has not been started");
-        }
-    }
+		private boolean incrementSample(CounterSample counterSample) {
+			return counterSample.getName() == null;
+		}
+	}
+
+	ReporterRunnable createReporterRunner() {
+		return new ReporterRunnable();
+	}
+
+	/**
+	 * Method that is called when reporting should be done. Only Simons that pass filter specified during
+	 * the reporter construction.
+	 *
+	 * @param stopwatchSamples stopwatches to report
+	 * @param counterSamples counters to report
+	 */
+	protected abstract void report(List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples);
+
+	/**
+	 * Start the reporter.
+	 * If reporter has already been started it will cause <code>IllegalStateException</code>.
+	 *
+	 * @throws java.lang.IllegalStateException if the reporter has already been started
+	 */
+	public synchronized void start() {
+		if (scheduledFuture == null || scheduledFuture.isCancelled()) {
+			ReporterRunnable reporterRunner = createReporterRunner();
+
+			// we execute Runnable immediately to create incremental Simon
+			scheduledFuture = getExecutorService().scheduleWithFixedDelay(reporterRunner, 0, duration, timeUnit);
+		} else {
+			throw new IllegalStateException("Reporter has already been started");
+		}
+	}
+
+	/**
+	 * Stop the reporter.
+	 * If reporter has already been stoped  it will cause <code>IllegalStateException</code>.
+	 *
+	 * @throws java.lang.IllegalStateException if the reporter has already been started
+	 */
+	public synchronized void stop() {
+		if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+			boolean interruptIfRunning = false;
+			scheduledFuture.cancel(interruptIfRunning);
+		} else {
+			throw new IllegalStateException("Reporter has not been started");
+		}
+	}
 }
