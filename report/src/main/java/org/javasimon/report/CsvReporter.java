@@ -25,6 +25,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	/** Default name of a CSV file where stopwatches' samples will be written */
 	public static final String DEFAULT_STOPWATCHES_FILE = "stopwatches.csv";
+	public static final char DEFAULT_SEPARATOR = ',';
 
 	/** Path to a file where counters' samples will be written */
 	private String countersFile;
@@ -37,6 +38,9 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	/** Writer that is used to save stopwatches' samples */
 	private PrintWriter stopwatchesWriter;
+
+	/** Separator in CSV file */
+	private char separator;
 
 	/** Time source used to get current time */
 	private TimeSource timeSource;
@@ -61,6 +65,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		reporter.countersFile(DEFAULT_COUNTERS_FILE);
 		reporter.stopwatchesFile(DEFAULT_STOPWATCHES_FILE);
 		reporter.timeSource(new SystemTimeSource());
+		reporter.separator(DEFAULT_SEPARATOR);
 
 		return reporter;
 	}
@@ -118,15 +123,15 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				counterSample.getDecrementSum());
 	}
 
-	private void writeFields(PrintWriter countersWriter, Object... fields) {
+	private void writeFields(PrintWriter writer, Object... fields) {
 		for (int i = 0; i < fields.length; i++) {
-			countersWriter.write(format(fields[i]));
+			writer.write(format(fields[i]));
 			if (i != fields.length - 1) {
-				countersWriter.write(',');
+				writer.write(separator);
 			}
 		}
 
-		countersWriter.println("");
+		writer.println();
 	}
 
 	private String format(Object value) {
@@ -150,7 +155,22 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	}
 
 	private void writeStopwatchesHeader() {
-		stopwatchesWriter.println("time,name,total,min,max,minTimestamp,maxTimestamp,active,maxActive,maxActiveTimestamp,last,mean,stdDev,variance,varianceN");
+		writeHeaders(stopwatchesWriter,
+				"time",
+				"name",
+				"total",
+				"min",
+				"max",
+				"minTimestamp",
+				"maxTimestamp",
+				"active",
+				"maxActive",
+				"maxActiveTimestamp",
+				"last",
+				"mean",
+				"stdDev",
+				"variance",
+				"varianceN");
 	}
 
 	private PrintWriter createPrintWriter(String filePath) throws IOException {
@@ -159,7 +179,27 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	}
 
 	private void writeCountersHeader() {
-		countersWriter.println("time,name,total,min,max,minTimestamp,maxTimestamp,incrementSum,decrementSum");
+		writeHeaders(countersWriter,
+				"time",
+				"name",
+				"total",
+				"min",
+				"max",
+				"minTimestamp",
+				"maxTimestamp",
+				"incrementSum",
+				"decrementSum");
+	}
+
+	private void writeHeaders(PrintWriter writer, String... headers) {
+		for (int i = 0; i < headers.length; i++) {
+			writer.write(headers[i]);
+			if (i != headers.length - 1) {
+				writer.write(separator);
+			}
+		}
+
+		writer.println();
 	}
 
 	@Override
@@ -235,5 +275,25 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	 */
 	TimeSource getTimeSource() {
 		return timeSource;
+	}
+
+	/**
+	 * Set seprator in CSV files.
+	 *
+	 * @param separator separator in CSV files
+	 * @return this instance of <code>CsvReporter</code>
+	 */
+	public CsvReporter separator(char separator) {
+		this.separator = separator;
+		return this;
+	}
+
+	/**
+	 * Gets currently used separator in CSV files.
+	 *
+	 * @return currently used separator in CSV files
+	 */
+	public char getSeparator() {
+		return separator;
 	}
 }

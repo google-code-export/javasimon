@@ -11,9 +11,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -25,12 +22,13 @@ import static org.mockito.Mockito.when;
  */
 public class CsvReporterTest {
 
-	CsvReporter reporter;
+	private CsvReporter reporter;
 	private Manager manager;
+	private TimeSource timeSource;
 
 	private static final String COUNTERS_FILE = "countersFile.csv";
 	private static final String STOPWATCHES_FILE = "stopwatchesFile.csv";
-	private TimeSource timeSource;
+	private static final char SEPARATOR = ';';
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
@@ -41,7 +39,8 @@ public class CsvReporterTest {
 		reporter = CsvReporter.forManager(manager)
 				.countersFile(COUNTERS_FILE)
 				.stopwatchesFile(STOPWATCHES_FILE)
-				.timeSource(timeSource);
+				.timeSource(timeSource)
+				.separator(SEPARATOR);
 	}
 
 	@AfterMethod
@@ -57,14 +56,9 @@ public class CsvReporterTest {
 	}
 
 	private void rm(String filePath) throws IOException {
-		Path path = Paths.get(filePath);
-		if (Files.exists(path)) {
-			try {
-				Files.delete(path);
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw e;
-			}
+		File file = new File(filePath);
+		if (file.exists() && !file.delete()) {
+			throw new IOException("Failed to delete file" + filePath);
 		}
 	}
 
@@ -131,6 +125,16 @@ public class CsvReporterTest {
 	}
 
 	@Test
+	public void testGetSeparator() {
+		Assert.assertEquals(reporter.getSeparator(), SEPARATOR);
+	}
+
+	@Test
+	public void testGetDefaultSeparator() {
+		Assert.assertEquals(CsvReporter.forDefaultManager().getSeparator(), CsvReporter.DEFAULT_SEPARATOR);
+	}
+
+	@Test
 	public void testCountersFileWasCreated() {
 		reporter.onStart();
 		reporter.onStop();
@@ -142,7 +146,7 @@ public class CsvReporterTest {
 		reporter.onStart();
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
-				csv("time,name,total,min,max,minTimestamp,maxTimestamp,incrementSum,decrementSum"));
+				csv("time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum"));
 	}
 
 	private String csv(String... lines) {
@@ -174,8 +178,8 @@ public class CsvReporterTest {
 
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
-				csv("time,name,total,min,max,minTimestamp,maxTimestamp,incrementSum,decrementSum",
-				"1000,\"counter.name\",1,0,3,100,200,3,2"));
+				csv("time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum",
+				"1000;\"counter.name\";1;0;3;100;200;3;2"));
 	}
 
 	@Test
@@ -183,7 +187,7 @@ public class CsvReporterTest {
 		reporter.onStart();
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
-				csv("time,name,total,min,max,minTimestamp,maxTimestamp,active,maxActive,maxActiveTimestamp,last,mean,stdDev,variance,varianceN"));
+				csv("time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN"));
 	}
 
 	@Test
@@ -210,8 +214,8 @@ public class CsvReporterTest {
 
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
-				csv("time,name,total,min,max,minTimestamp,maxTimestamp,active,maxActive,maxActiveTimestamp,last,mean,stdDev,variance,varianceN",
-					"1000,\"stopwatch.name\",100,2,10,200,300,3,10,400,5,8.0,4.0,2.0,2.0"));
+				csv("time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN",
+					"1000;\"stopwatch.name\";100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;2.0"));
 	}
 
 	private String fileToString(String filePath) throws IOException {
