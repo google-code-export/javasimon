@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 
 /**
  * Base class for reporters that periodically report current Simons state to external source.
- * An instance of {@link org.javasimon.report.ScheduledReporter} is created using a fluent API. Before the
+ * An instance of <code>ScheduledReporter</code> is created using a fluent API. Before the
  * reporter is started it should be configured using methods like
  * {@link org.javasimon.report.ScheduledReporter#filter(org.javasimon.SimonFilter)},
  * {@link org.javasimon.report.ScheduledReporter#name(String)}, etc.
@@ -97,7 +97,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 *
 	 * @param duration duration of a period
 	 * @param timeUnit timeunit of a period
-	 * @return scheduled reporter instance
+	 * @return this reporter instance
 	 */
 	public R every(long duration, TimeUnit timeUnit) {
 		setDuration(duration);
@@ -151,7 +151,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 * Set locale used by the reporter.
 	 *
 	 * @param locale locale used by the reporter
-	 * @return this scheduled reporter
+	 * @return this reporter instance
 	 */
 	public R locale(Locale locale) {
 		if (locale == null) {
@@ -174,8 +174,8 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 * Set filter that will be used to select subset of Simons to report about.
 	 * Only Simons that will be passed by the specified filter will be used during reporting.
 	 *
-	 * @param filter that
-	 * @return
+	 * @param filter only Simons that pass the specified filter will be reported
+	 * @return this reporter instance
 	 */
 	public R filter(SimonFilter filter) {
 		this.filter = filter;
@@ -205,7 +205,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	/**
 	 * Set an instance of executor service that will be used by the reporter.
 	 * @param executorService instance of executor service that will be used by the reporter.
-	 * @return this scheduled reporter
+	 * @return this reporter instance
 	 */
 	R setExecutorService(ScheduledExecutorService executorService) {
 		if (executorService == null) {
@@ -220,7 +220,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 * Set name of the reporter.
 	 *
 	 * @param name name of the reporter
-	 * @return this scheduled reporter
+	 * @return this reporter instance
 	 */
 	public R name(String name) {
 		this.name = name;
