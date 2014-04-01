@@ -13,8 +13,14 @@ import java.util.List;
  *     <li>name - name of a simon</li>
  * </ul>
  *
+ * <p>
  * Other fields differs for counters and stopwatches and correspond to fields in {@link org.javasimon.CounterSample} and
  * {@link org.javasimon.StopwatchSample} correspondingly.
+ *
+ * <p>
+ * The reporter can either append existing files or replace old content. The appropriate mode can be selected using
+ * either {@link CsvReporter#append()} or {@link CsvReporter#setAppendFile(boolean)}. By default old content is rewritten.
+ * If append mode set to true and target file does exists, fields' names are not written on the reporter start.
  *
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
@@ -44,6 +50,9 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	/** Time source used to get current time */
 	private TimeSource timeSource;
+
+	/** Whether to append or replace existing files */
+	private boolean appendFile;
 
 	/**
 	 * Constructor. Creates CsvReporter for the specified manager.
@@ -145,13 +154,27 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	@Override
 	protected void onStart() {
 		try {
+			boolean countersFileExists = fileExists(countersFile);
+			boolean stopwatchesFileExists = fileExists(stopwatchesFile);
+
 			countersWriter = createPrintWriter(countersFile);
 			stopwatchesWriter = createPrintWriter(stopwatchesFile);
-			writeCountersHeader();
-			writeStopwatchesHeader();
+
+			if (!appendFile || !countersFileExists) {
+				writeCountersHeader();
+			}
+
+			if (!appendFile || !stopwatchesFileExists) {
+				writeStopwatchesHeader();
+			}
 		} catch (IOException e) {
 			throw new SimonException(e);
 		}
+	}
+
+	private boolean fileExists(String fileName) {
+		File file = new File(fileName);
+		return file.exists();
 	}
 
 	private void writeStopwatchesHeader() {
@@ -174,7 +197,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	}
 
 	private PrintWriter createPrintWriter(String filePath) throws IOException {
-		FileWriter writer = new FileWriter(filePath);
+		FileWriter writer = new FileWriter(filePath, appendFile);
 		return new PrintWriter(new BufferedWriter(writer));
 	}
 
@@ -295,5 +318,33 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	 */
 	public char getSeparator() {
 		return separator;
+	}
+
+	/**
+	 * Enable appending to CSV files.
+	 *
+	 * @return this instance of <code>CsvReporter</code>
+	 */
+	public CsvReporter append() {
+		appendFile = true;
+		return this;
+	}
+
+	/**
+	 * Set appending mode for writing CSV files.     *
+	 *
+	 * @param appendFile appending mode for writing CSV files
+	 */
+	public void setAppendFile(boolean appendFile) {
+		this.appendFile = appendFile;
+	}
+
+	/**
+	 * Gets appending mode.
+	 *
+	 * @return appending mode
+	 */
+	public boolean isAppendFile() {
+		return appendFile;
 	}
 }

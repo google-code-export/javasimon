@@ -29,6 +29,8 @@ public class CsvReporterTest {
 	private static final String COUNTERS_FILE = "countersFile.csv";
 	private static final String STOPWATCHES_FILE = "stopwatchesFile.csv";
 	private static final char SEPARATOR = ';';
+	private static final String COUNTERS_FIELDS = "time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum";
+	private static final String STOPWATCH_FIELDS = "time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN";
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
@@ -135,6 +137,23 @@ public class CsvReporterTest {
 	}
 
 	@Test
+	public void testGetIsAppend() {
+		reporter.append();
+		Assert.assertTrue(reporter.isAppendFile());
+	}
+
+	@Test
+	public void testGetDefaultIsAppend() {
+		Assert.assertFalse(CsvReporter.forDefaultManager().isAppendFile());
+	}
+
+	@Test
+	public void testSetAppendFile() {
+		reporter.setAppendFile(true);
+		Assert.assertTrue(reporter.isAppendFile());
+	}
+
+	@Test
 	public void testCountersFileWasCreated() {
 		reporter.onStart();
 		reporter.onStop();
@@ -146,7 +165,7 @@ public class CsvReporterTest {
 		reporter.onStart();
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
-				csv("time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum"));
+				csv(COUNTERS_FIELDS));
 	}
 
 	private String csv(String... lines) {
@@ -178,7 +197,7 @@ public class CsvReporterTest {
 
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
-				csv("time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum",
+				csv(COUNTERS_FIELDS,
 				"1000;\"counter.name\";1;0;3;100;200;3;2"));
 	}
 
@@ -187,7 +206,7 @@ public class CsvReporterTest {
 		reporter.onStart();
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
-				csv("time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN"));
+				csv(STOPWATCH_FIELDS));
 	}
 
 	@Test
@@ -214,8 +233,62 @@ public class CsvReporterTest {
 
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
-				csv("time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN",
+				csv(STOPWATCH_FIELDS,
 					"1000;\"stopwatch.name\";100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;2.0"));
+	}
+
+	@Test
+	public void testAppendToCountersFile() throws Exception {
+		createFileWithContent(COUNTERS_FILE, COUNTERS_FIELDS);
+		reporter.append();
+
+		reporter.onStart();
+		reporter.onStop();
+		Assert.assertEquals(fileToString(COUNTERS_FILE),
+				csv(COUNTERS_FIELDS));
+	}
+
+	@Test
+	public void testAppendToStopwatchesFile() throws Exception {
+		createFileWithContent(STOPWATCHES_FILE, STOPWATCH_FIELDS);
+		reporter.append();
+
+		reporter.onStart();
+		reporter.onStop();
+		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
+				csv(STOPWATCH_FIELDS));
+	}
+
+	@Test
+	public void testAppendToCountersFileWhenFileDoesNotExists() throws Exception {
+		reporter.append();
+
+		reporter.onStart();
+		reporter.onStop();
+		Assert.assertEquals(fileToString(COUNTERS_FILE),
+				csv(COUNTERS_FIELDS));
+	}
+
+	@Test
+	public void testAppendToStopwatchesFileWhenFileDoesNotExists() throws Exception {
+		reporter.append();
+
+		reporter.onStart();
+		reporter.onStop();
+		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
+				csv(STOPWATCH_FIELDS));
+	}
+
+	private void createFileWithContent(String fileName, String content) throws IOException {
+		PrintWriter writer = null;
+		try {
+			 writer = new PrintWriter(new FileWriter(fileName));
+			 writer.println(content);
+		} finally {
+			if (writer != null) {
+				writer.close();
+			}
+		}
 	}
 
 	private String fileToString(String filePath) throws IOException {
@@ -236,7 +309,6 @@ public class CsvReporterTest {
 				reader.close();
 			}
 		}
-
 
 		return content.toString();
 	}
