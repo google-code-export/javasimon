@@ -302,12 +302,20 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 		if (scheduledFuture == null || scheduledFuture.isCancelled()) {
 			ReporterRunnable reporterRunner = createReporterRunner();
 
-			// we execute Runnable immediately to create incremental Simon
+			onStart();
+			// we execute Runnable immediately to create incremental Simons
 			scheduledFuture = getExecutorService().scheduleWithFixedDelay(reporterRunner, 0, duration, timeUnit);
 		} else {
 			throw new IllegalStateException("Reporter has already been started");
 		}
 	}
+
+	/**
+	 * This method is called during {@link ScheduledReporter#start()}
+	 * method execution before reporting task is scheduled.
+	 * It can be used to allocated required resources such as connections, files, etc.
+	 */
+	protected abstract void onStart();
 
 	/**
 	 * Stop the reporter.
@@ -319,8 +327,16 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 		if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
 			boolean interruptIfRunning = false;
 			scheduledFuture.cancel(interruptIfRunning);
+			onStop();
 		} else {
 			throw new IllegalStateException("Reporter has not been started");
 		}
 	}
+
+	/**
+	 * This method is called during {@link ScheduledReporter#stop()} method execution after the
+	 * reporting task was cancelled.
+	 * It can be used to free allocated resources such as connections, files, etc.
+	 */
+	protected abstract void onStop();
 }

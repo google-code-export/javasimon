@@ -1,6 +1,7 @@
 package org.javasimon.report;
 
 import org.javasimon.*;
+import org.mockito.InOrder;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -47,7 +48,21 @@ public class ScheduledReporterTest {
 			protected void report(List list, List list2) {
 				throw new AssertionError("This method should be mocked");
 			}
+
+			@Override
+			protected void onStart() {
+				throw new AssertionError("This method should be mocked");
+			}
+
+			@Override
+			protected void onStop() {
+				throw new AssertionError("This method should be mocked");
+			}
 		});
+
+		doAnswer(RETURNS_DEFAULTS).when(reporter).report(any(List.class), any(List.class));
+		doAnswer(RETURNS_DEFAULTS).when(reporter).onStart();
+		doAnswer(RETURNS_DEFAULTS).when(reporter).onStop();
 
 		return reporter;
 	}
@@ -155,7 +170,9 @@ public class ScheduledReporterTest {
 		ScheduledReporter reporter = scheduledReporter.setExecutorService(executorService).every(timeDuration, timeUnit);
 		reporter.start();
 
-		verify(executorService)
+		InOrder inOrder = inOrder(executorService, scheduledReporter);
+		inOrder.verify(scheduledReporter).onStart();
+		inOrder.verify(executorService)
 				.scheduleWithFixedDelay(any(ScheduledReporter.ReporterRunnable.class), eq(0L), eq(timeDuration), eq(timeUnit));
 
 	}
@@ -179,7 +196,9 @@ public class ScheduledReporterTest {
 		reporter.start();
 		reporter.stop();
 
-		verify(scheduledFuture).cancel(false);
+		InOrder inOrder = inOrder(scheduledReporter, scheduledFuture);
+		inOrder.verify(scheduledFuture).cancel(false);
+		inOrder.verify(scheduledReporter).onStop();
 	}
 
 	@Test(expectedExceptions = IllegalStateException.class)
@@ -221,7 +240,6 @@ public class ScheduledReporterTest {
 		when(c1.sampleIncrement(key)).thenReturn(cs1);
 
 		when(manager.getSimons(SimonPattern.create("*"))).thenReturn(Arrays.<Simon>asList(s1, s2, c1));
-		doAnswer(RETURNS_DEFAULTS).when(scheduledReporter).report(any(List.class), any(List.class));
 
 		ScheduledReporter.ReporterRunnable runnable = scheduledReporter.createReporterRunner();
 		runnable.run();
@@ -245,7 +263,6 @@ public class ScheduledReporterTest {
 		when(c1.sampleIncrement(key)).thenReturn(cs1);
 
 		when(manager.getSimons(SimonPattern.create("*"))).thenReturn(Arrays.<Simon>asList(s1, s2, c1));
-		doAnswer(RETURNS_DEFAULTS).when(scheduledReporter).report(any(List.class), any(List.class));
 
 		ScheduledReporter.ReporterRunnable runnable = scheduledReporter.createReporterRunner();
 		runnable.run();
@@ -294,8 +311,6 @@ public class ScheduledReporterTest {
 		scheduledReporter.filter(filter);
 		when(manager.getSimons(filter)).thenReturn(Arrays.asList(s1, c1));
 
-		doAnswer(RETURNS_DEFAULTS).when(scheduledReporter).report(any(List.class), any(List.class));
-
 		ScheduledReporter.ReporterRunnable runnable = scheduledReporter.createReporterRunner();
 		runnable.run();
 
@@ -321,8 +336,6 @@ public class ScheduledReporterTest {
 		scheduledReporter.filter(filter);
 		when(manager.getSimons(filter)).thenReturn(Arrays.asList(s1, c1));
 
-		doAnswer(RETURNS_DEFAULTS).when(scheduledReporter).report(any(List.class), any(List.class));
-
 		scheduledReporter.name(key);
 		ScheduledReporter.ReporterRunnable runnable = scheduledReporter.createReporterRunner();
 		runnable.run();
@@ -335,13 +348,12 @@ public class ScheduledReporterTest {
 		// Unknown Simon is in another package, so we cannot use it in this test
 		// We mock it with mock Simon
 		Simon unknownSimon = mock(Simon.class);
-
 		when(manager.getSimons(SimonPattern.create("*"))).thenReturn(Arrays.asList(unknownSimon));
 
-		doAnswer(RETURNS_DEFAULTS).when(scheduledReporter).report(any(List.class), any(List.class));
 		ScheduledReporter.ReporterRunnable runnable = scheduledReporter.createReporterRunner();
 		runnable.run();
 
 		verify(scheduledReporter).report(Arrays.asList(), Arrays.asList());
 	}
+
 }

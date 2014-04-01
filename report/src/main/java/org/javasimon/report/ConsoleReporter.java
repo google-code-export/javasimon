@@ -74,6 +74,16 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 		reportCounters(counterSamples);
 	}
 
+	@Override
+	protected void onStart() {
+
+	}
+
+	@Override
+	protected void onStop() {
+
+	}
+
 	private void reportCounters(List<CounterSample> counterSamples) {
 		for (CounterSample sample : counterSamples) {
 			reportSample(sample);
