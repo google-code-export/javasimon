@@ -92,11 +92,15 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 
 	private void reportSample(CounterSample sample) {
 		printStream.println(sample.getName());
-		printStream.printf(getLocale(), "                      total = %d ns%n", sample.getCounter());
-		printStream.printf(getLocale(), "                        min = %d ns%n", sample.getMin());
-		printStream.printf(getLocale(), "                        max = %d ns%n", sample.getMax());
-		printStream.printf(getLocale(), "              min timestamp = %d ns%n", sample.getMinTimestamp());
-		printStream.printf(getLocale(), "              max timestamp = %d ns%n", sample.getMaxTimestamp());
+		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
+		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
+		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
+		printStream.printf(getLocale(), "                 last reset = %d ns%n", sample.getLastReset());
+		printStream.printf(getLocale(), "                    counter = %d%n",    sample.getCounter());
+		printStream.printf(getLocale(), "                        min = %d%n",    sample.getMin());
+		printStream.printf(getLocale(), "                        max = %d%n",    sample.getMax());
+		printStream.printf(getLocale(), "              min timestamp = %d ms%n", sample.getMinTimestamp());
+		printStream.printf(getLocale(), "              max timestamp = %d ms%n", sample.getMaxTimestamp());
 		printStream.printf(getLocale(), "              increment sum = %d%n",    sample.getIncrementSum());
 		printStream.printf(getLocale(), "              decrement sum = %d%n",    sample.getDecrementSum());
 	}
@@ -113,6 +117,10 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 
 	private void reportSample(StopwatchSample sample) {
 		printStream.println(sample.getName());
+		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
+		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
+		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
+		printStream.printf(getLocale(), "                 last reset = %d ns%n", sample.getLastReset());
 		printStream.printf(getLocale(), "                      total = %d ns%n", sample.getTotal());
 		printStream.printf(getLocale(), "                      count = %d%n",    sample.getCounter());
 		printStream.printf(getLocale(), "                  min split = %d ns%n", sample.getMin());
