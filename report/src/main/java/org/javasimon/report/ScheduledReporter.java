@@ -56,6 +56,9 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	/** Name of current reporter */
 	private String name;
 
+	/** Time source used to get current time */
+	private TimeSource timeSource;
+
 	/**
 	 * Create ScheduledReporter for a specified manager. Also sets the following default values:
 	 * <ul>
@@ -73,7 +76,9 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 		name(DEFAULT_INCREMENT_KEY);
 		locale(Locale.getDefault());
 		filter(SimonPattern.create("*"));
+		timeSource(new SystemTimeSource());
 		setExecutorService(createExecutorService());
+
 	}
 
 	private ScheduledExecutorService createExecutorService() {
@@ -234,6 +239,25 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Set time source that will be used to acquire current time.
+	 *
+	 * @param timeSource time source instance
+	 * @return this <code>CsvReporter</code> instance
+	 */
+	public R timeSource(TimeSource timeSource) {
+		this.timeSource = timeSource;
+		return (R) this;
+	}
+
+	/**
+	 * Gets <code>TimeSource</code> instance used by this <code>ScheduledReporter</code> instance.
+	 * @return <code>TimeSource</code> instance used by this <code>ScheduledReporter</code> instance
+	 */
+	TimeSource getTimeSource() {
+		return timeSource;
 	}
 
 	/**

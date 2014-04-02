@@ -48,9 +48,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	/** Separator in CSV file */
 	private char separator;
 
-	/** Time source used to get current time */
-	private TimeSource timeSource;
-
 	/** Whether to append or replace existing files */
 	private boolean appendFile;
 
@@ -73,7 +70,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		CsvReporter reporter = new CsvReporter(manager);
 		reporter.countersFile(DEFAULT_COUNTERS_FILE);
 		reporter.stopwatchesFile(DEFAULT_STOPWATCHES_FILE);
-		reporter.timeSource(new SystemTimeSource());
 		reporter.separator(DEFAULT_SEPARATOR);
 
 		return reporter;
@@ -90,7 +86,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	@Override
 	protected void report(List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples) {
-		long currentTime = timeSource.getTime();
+		long currentTime = getTimeSource().getTime();
 		for (CounterSample counterSample : counterSamples) {
 			writeSample(currentTime, counterSample);
 		}
@@ -279,25 +275,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	 */
 	public String getStopwatchesFile() {
 		return stopwatchesFile;
-	}
-
-	/**
-	 * Set time source that will be used to acquiring current time.
-	 *
-	 * @param timeSource time source instance
-	 * @return this <code>CsvReporter</code> instance
-	 */
-	CsvReporter timeSource(TimeSource timeSource) {
-		this.timeSource = timeSource;
-		return this;
-	}
-
-	/**
-	 * Gets <code>TimeSource</code> instance used by this <code>CsvReporter</code> instance.
-	 * @return <code>TimeSource</code> instance used by this <code>CsvReporter</code> instance
-	 */
-	TimeSource getTimeSource() {
-		return timeSource;
 	}
 
 	/**

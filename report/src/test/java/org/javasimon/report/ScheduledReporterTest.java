@@ -33,6 +33,7 @@ public class ScheduledReporterTest {
 		manager = mock(Manager.class);
 		executorService = mock(ScheduledExecutorService.class);
 		reporterRunnable = mock(ScheduledReporter.ReporterRunnable.class);
+
 		scheduledReporter = createScheduledReporter(manager);
 		scheduledReporter.setExecutorService(executorService);
 
@@ -160,6 +161,18 @@ public class ScheduledReporterTest {
 	public void testSetName() {
 		scheduledReporter.name("name");
 		Assert.assertEquals(scheduledReporter.getName(), "name");
+	}
+
+	@Test
+	public void testGetTimeSource() {
+		TimeSource timeSource = mock(TimeSource.class);
+		scheduledReporter.timeSource(timeSource);
+		Assert.assertEquals(scheduledReporter.getTimeSource(), timeSource);
+	}
+
+	@Test
+	public void testGetDefaultTimeSource() {
+		Assert.assertTrue(scheduledReporter.getTimeSource() instanceof SystemTimeSource);
 	}
 
 	@Test

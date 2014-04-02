@@ -116,15 +116,7 @@ public class CsvReporterTest {
 		reporter.stopwatchesFile("");
 	}
 
-	@Test
-	public void testGetTimeSource() {
-		Assert.assertEquals(reporter.getTimeSource(), timeSource);
-	}
 
-	@Test
-	public void testGetDefaultTimeSource() {
-		Assert.assertTrue(CsvReporter.forDefaultManager().getTimeSource() instanceof SystemTimeSource);
-	}
 
 	@Test
 	public void testGetSeparator() {
