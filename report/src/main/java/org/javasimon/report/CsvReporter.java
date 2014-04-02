@@ -100,6 +100,10 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		writeFields(stopwatchesWriter,
 				currentTime,
 				stopwatchSample.getName(),
+				stopwatchSample.getNote(),
+				stopwatchSample.getFirstUsage(),
+				stopwatchSample.getLastUsage(),
+				stopwatchSample.getLastReset(),
 				stopwatchSample.getTotal(),
 				stopwatchSample.getMin(),
 				stopwatchSample.getMax(),
@@ -119,6 +123,10 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		writeFields(countersWriter,
 				currentTime,
 				counterSample.getName(),
+				counterSample.getNote(),
+				counterSample.getFirstUsage(),
+				counterSample.getLastUsage(),
+				counterSample.getLastReset(),
 				counterSample.getCounter(),
 				counterSample.getMin(),
 				counterSample.getMax(),
@@ -143,7 +151,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		if (value instanceof String) {
 			return "\"" + value + "\"";
 		} else {
-			return value.toString();
+			return value == null ? "" : value.toString();
 		}
 	}
 
@@ -177,6 +185,10 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		writeHeaders(stopwatchesWriter,
 				"time",
 				"name",
+				"note",
+				"firstUsage",
+				"lastUsage",
+				"lastReset",
 				"total",
 				"min",
 				"max",
@@ -201,7 +213,11 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		writeHeaders(countersWriter,
 				"time",
 				"name",
-				"total",
+				"note",
+				"firstUsage",
+				"lastUsage",
+				"lastReset",
+				"counter",
 				"min",
 				"max",
 				"minTimestamp",

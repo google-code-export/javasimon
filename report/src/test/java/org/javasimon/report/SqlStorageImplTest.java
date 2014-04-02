@@ -121,7 +121,7 @@ public class SqlStorageImplTest {
 	public void testAddCounterSample() {
 		long timestamp = 1000;
 		CounterSample sample = new CounterSample();
-		sample.setName("stopwatch.name");
+		sample.setName("counter.name");
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);

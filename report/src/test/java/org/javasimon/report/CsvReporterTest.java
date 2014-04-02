@@ -29,8 +29,8 @@ public class CsvReporterTest {
 	private static final String COUNTERS_FILE = "countersFile.csv";
 	private static final String STOPWATCHES_FILE = "stopwatchesFile.csv";
 	private static final char SEPARATOR = ';';
-	private static final String COUNTERS_FIELDS = "time;name;total;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum";
-	private static final String STOPWATCH_FIELDS = "time;name;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN";
+	private static final String COUNTERS_FIELDS = "time;name;note;firstUsage;lastUsage;lastReset;counter;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum";
+	private static final String STOPWATCH_FIELDS = "time;name;note;firstUsage;lastUsage;lastReset;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN";
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
@@ -60,7 +60,7 @@ public class CsvReporterTest {
 	private void rm(String filePath) throws IOException {
 		File file = new File(filePath);
 		if (file.exists() && !file.delete()) {
-			throw new IOException("Failed to delete file" + filePath);
+			throw new IOException("Failed to delete file " + filePath);
 		}
 	}
 
@@ -174,23 +174,54 @@ public class CsvReporterTest {
 	public void testCounterSampleWasWritten() throws Exception {
 		reporter.onStart();
 
-		CounterSample counterSample = new CounterSample();
-		counterSample.setName("counter.name");
-		counterSample.setCounter(1);
-		counterSample.setMin(0);
-		counterSample.setMax(3);
-		counterSample.setMinTimestamp(100);
-		counterSample.setMaxTimestamp(200);
-		counterSample.setIncrementSum(3);
-		counterSample.setDecrementSum(2);
+		CounterSample sample = new CounterSample();
+		sample.setName("counter.name");
+		sample.setNote("note");
+		sample.setFirstUsage(50);
+		sample.setLastUsage(500);
+		sample.setLastReset(20);
+		sample.setCounter(1);
+		sample.setMin(0);
+		sample.setMax(3);
+		sample.setMinTimestamp(100);
+		sample.setMaxTimestamp(200);
+		sample.setIncrementSum(3);
+		sample.setDecrementSum(2);
 
 		when(timeSource.getTime()).thenReturn(1000L);
-		reporter.report(Collections.EMPTY_LIST, Arrays.asList(counterSample));
+		reporter.report(Collections.EMPTY_LIST, Arrays.asList(sample));
 
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
 				csv(COUNTERS_FIELDS,
-				"1000;\"counter.name\";1;0;3;100;200;3;2"));
+				"1000;\"counter.name\";\"note\";50;500;20;1;0;3;100;200;3;2"));
+	}
+
+	@Test
+	public void testNullNoteGuard() throws Exception {
+		reporter.onStart();
+
+		CounterSample sample = new CounterSample();
+		sample.setName("counter.name");
+		sample.setNote(null);
+		sample.setFirstUsage(50);
+		sample.setLastUsage(500);
+		sample.setLastReset(20);
+		sample.setCounter(1);
+		sample.setMin(0);
+		sample.setMax(3);
+		sample.setMinTimestamp(100);
+		sample.setMaxTimestamp(200);
+		sample.setIncrementSum(3);
+		sample.setDecrementSum(2);
+
+		when(timeSource.getTime()).thenReturn(1000L);
+		reporter.report(Collections.EMPTY_LIST, Arrays.asList(sample));
+
+		reporter.onStop();
+		Assert.assertEquals(fileToString(COUNTERS_FILE),
+				csv(COUNTERS_FIELDS,
+						"1000;\"counter.name\";;50;500;20;1;0;3;100;200;3;2"));
 	}
 
 	@Test
@@ -205,6 +236,10 @@ public class CsvReporterTest {
 	public void testStopwatchSampleWritten() throws Exception {
 		StopwatchSample sample = new StopwatchSample();
 		sample.setName("stopwatch.name");
+		sample.setNote("note");
+		sample.setFirstUsage(50);
+		sample.setLastUsage(500);
+		sample.setLastReset(20);
 		sample.setTotal(100);
 		sample.setMin(2);
 		sample.setMax(10);
@@ -217,7 +252,7 @@ public class CsvReporterTest {
 		sample.setMean(8.0);
 		sample.setStandardDeviation(4.0);
 		sample.setVariance(2.0);
-		sample.setVarianceN(2.0);
+		sample.setVarianceN(3.0);
 
 		reporter.onStart();
 		when(timeSource.getTime()).thenReturn(1000L);
@@ -226,7 +261,7 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
 				csv(STOPWATCH_FIELDS,
-					"1000;\"stopwatch.name\";100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;2.0"));
+					"1000;\"stopwatch.name\";\"note\";50;500;20;100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;3.0"));
 	}
 
 	@Test
