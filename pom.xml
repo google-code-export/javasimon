@@ -85,7 +85,7 @@
 						<target>1.6</target>
 						<compilerArguments>
 							<bootclasspath>
-								${env.JDK6.HOME}/jre/lib/rt.jar${path.separator}${env.JDK6.HOME}/jre/lib/jce.jar
+								${env.JDK6.HOME}/jre/lib/rt.jar${path.separator}${env.JDK6.HOME}/jre/lib/jce.jar${path.separator}${env.JDK6.HOME}/jre/lib/jsse.jar
 							</bootclasspath>
 						</compilerArguments>
 					</configuration>
