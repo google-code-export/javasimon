@@ -199,7 +199,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 		this.manager = manager;
 	}
 
-	protected Manager getManager() {
+	public Manager getManager() {
 		return manager;
 	}
 
@@ -256,7 +256,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 * Gets <code>TimeSource</code> instance used by this <code>ScheduledReporter</code> instance.
 	 * @return <code>TimeSource</code> instance used by this <code>ScheduledReporter</code> instance
 	 */
-	TimeSource getTimeSource() {
+	protected TimeSource getTimeSource() {
 		return timeSource;
 	}
 
