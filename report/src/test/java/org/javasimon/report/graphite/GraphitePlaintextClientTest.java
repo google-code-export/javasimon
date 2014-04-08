@@ -147,10 +147,10 @@ public class GraphitePlaintextClientTest {
 		sample.setMaxActive(10);
 		sample.setMaxActiveTimestamp(400);
 		sample.setLast(5);
-		sample.setMean(8.0);
-		sample.setStandardDeviation(4.0);
-		sample.setVariance(2.0);
-		sample.setVarianceN(2.0);
+		sample.setMean(8.2);
+		sample.setStandardDeviation(4.2);
+		sample.setVariance(2.2);
+		sample.setVarianceN(2.2);
 
 		long timestamp = 12345;
 
@@ -160,15 +160,15 @@ public class GraphitePlaintextClientTest {
 
 		String sentString = new String(outputStream.toByteArray());
 		Assert.assertEquals(sentString, lines(
-				"simon.path.total 100 12345",
-				"simon.path.min 2 12345",
-				"simon.path.max 10 12345",
-				"simon.path.active 3 12345",
-				"simon.path.maxActive 10 12345",
-				"simon.path.mean 8.0 12345",
-				"simon.path.stdDev 4.0 12345",
-				"simon.path.variance 2.0 12345",
-				"simon.path.varianceN 2.0 12345"
+				"simon.path.total 100 12",
+				"simon.path.min 2 12",
+				"simon.path.max 10 12",
+				"simon.path.active 3 12",
+				"simon.path.maxActive 10 12",
+				"simon.path.mean 8.2 12",
+				"simon.path.stdDev 4.2 12",
+				"simon.path.variance 2.2 12",
+				"simon.path.varianceN 2.2 12"
 		));
 	}
 
@@ -208,11 +208,11 @@ public class GraphitePlaintextClientTest {
 
 		String sentString = new String(outputStream.toByteArray());
 		Assert.assertEquals(sentString, lines(
-				"simon.path.count 1 12345",
-				"simon.path.min 2 12345",
-				"simon.path.max 10 12345",
-				"simon.path.incrementSum 3 12345",
-				"simon.path.decrementSum 2 12345"
+				"simon.path.count 1 12",
+				"simon.path.min 2 12",
+				"simon.path.max 10 12",
+				"simon.path.incrementSum 3 12",
+				"simon.path.decrementSum 2 12"
 		));
 	}
 
@@ -233,7 +233,7 @@ public class GraphitePlaintextClientTest {
 	}
 
 	@Test
-	public void testTwoParamsCtor() {
+	public void testDefaultSimonToPathParamsCtor() {
 		GraphitePlaintextClient client = new GraphitePlaintextClient(TEST_ADDRESS, socketFactory);
 		SampleToPathImpl simonToPath = (SampleToPathImpl) client.getSampleToPath();
 
@@ -250,4 +250,13 @@ public class GraphitePlaintextClientTest {
 		Assert.assertEquals(simonToPath.getPrefix(), "");
 	}
 
+	@Test
+	public void testDefaultSocketFactoryParamsCtor() {
+		GraphitePlaintextClient client = new GraphitePlaintextClient(TEST_ADDRESS, sampleToPath);
+
+		Assert.assertEquals(
+				client.getSocketFactory(), SocketFactory.getDefault());
+
+		Assert.assertEquals(client.getSampleToPath(), sampleToPath);
+	}
 }

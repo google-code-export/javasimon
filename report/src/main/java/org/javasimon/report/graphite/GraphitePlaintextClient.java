@@ -1,8 +1,11 @@
 package org.javasimon.report.graphite;
 
+import org.javasimon.CounterSample;
 import org.javasimon.SimonException;
 import org.javasimon.StopwatchSample;
-import org.javasimon.CounterSample;
+import org.javasimon.utils.SimonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
 import java.io.BufferedWriter;
@@ -11,6 +14,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 
 /**
@@ -19,6 +25,9 @@ import java.util.List;
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
 public class GraphitePlaintextClient implements GraphiteClient {
+
+	private static final Logger logger = LoggerFactory.getLogger(GraphitePlaintextClient.class);
+
 	/** Used to build path for each Simon in Graphite tree */
 	private final SampleToPath sampleToPath;
 
@@ -56,6 +65,16 @@ public class GraphitePlaintextClient implements GraphiteClient {
 	}
 
 	/**
+	 * Constructor. Creates an instance with default SocketFactory.
+	 *
+	 * @param serverAddress address of a Graphite server
+	 * @param sampleToPath converter of samples to pathes in Graphite tree
+	 */
+	public GraphitePlaintextClient(InetSocketAddress serverAddress, SampleToPath sampleToPath) {
+		this(serverAddress, SocketFactory.getDefault(), sampleToPath);
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * @param serverAddress address of a Graphite server
@@ -70,13 +89,15 @@ public class GraphitePlaintextClient implements GraphiteClient {
 
 	@Override
 	public void connect() {
+		logger.info("Connecting to a Graphite server {}", serverAddress);
+
 		if (socket != null) {
 			throw new IllegalStateException("Connection has already been established");
 		}
 
 		try {
 			socket = socketFactory.createSocket(serverAddress.getHostName(), serverAddress.getPort());
-			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		} catch (IOException e) {
 			throw new SimonException(e);
 		}
@@ -84,13 +105,17 @@ public class GraphitePlaintextClient implements GraphiteClient {
 
 	@Override
 	public void send(long timestamp, List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples) {
+		logger.debug("Sending data to a Graphite server");
+
+		long msTimestamp = timestamp / SimonUtils.MILLIS_IN_SECOND;
+
 		try {
 			for (StopwatchSample stopwatchSample : stopwatchSamples) {
-				sendSample(timestamp, stopwatchSample);
+				sendSample(msTimestamp, stopwatchSample);
 			}
 
 			for (CounterSample counterSample : counterSamples) {
-				sendSample(timestamp, counterSample);
+				sendSample(msTimestamp, counterSample);
 			}
 		} catch (IOException e) {
 			throw new SimonException(e);
@@ -121,7 +146,24 @@ public class GraphitePlaintextClient implements GraphiteClient {
 		sendSample(path(simonPath, "varianceN"), stopwatchSample.getVarianceN(), timestamp);
 	}
 
-	private void sendSample(String path, Object val, long timestamp) throws IOException {
+	private void sendSample(String path, long val, long timestamp) throws IOException {
+		sendSample(path, Long.toString(val), timestamp);
+	}
+
+	private void sendSample(String path, double val, long timestamp) throws IOException {
+		String formattedDouble = formatDouble(val);
+		sendSample(path, formattedDouble, timestamp);
+	}
+
+	private String formatDouble(double val) {
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+		otherSymbols.setDecimalSeparator('.');
+
+		DecimalFormat df = new DecimalFormat("#.##", otherSymbols);
+		return df.format(val);
+	}
+
+	private void sendSample(String path, String val, long timestamp) throws IOException {
 		writer.write(path);
 		writer.write(' ');
 		writer.write(val.toString());
@@ -137,6 +179,8 @@ public class GraphitePlaintextClient implements GraphiteClient {
 
 	@Override
 	public void close() {
+		logger.info("Disconnecting from a Graphite server {}", serverAddress);
+
 		if (socket == null) {
 			throw new IllegalStateException("close() should be called after connect()");
 		}
