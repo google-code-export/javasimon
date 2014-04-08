@@ -1,5 +1,6 @@
 package org.javasimon.examples.report;
 
+import org.javasimon.Counter;
 import org.javasimon.EnabledManager;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
@@ -26,6 +27,8 @@ public class GraphiteReporterExample {
 	private static final InetSocketAddress SERVER = new InetSocketAddress(ADDRESS, PORT);
 	// Name of a stopwatch
 	private static final String STOPWATCH_NAME = "example.stopwatch";
+	// Name of a counter
+	private static final String COUNTER_NAME = "example.counter";
 
 	private static final int REPORT_PERIOD = 2;
 	public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
@@ -52,6 +55,10 @@ public class GraphiteReporterExample {
 		Stopwatch stopwatch1 = manager1.getStopwatch(STOPWATCH_NAME);
 		Stopwatch stopwatch2 = manager2.getStopwatch(STOPWATCH_NAME);
 
+		// Two counters with same names, but from different managers
+		Counter counter1 = manager1.getCounter(COUNTER_NAME);
+		Counter counter2 = manager2.getCounter(COUNTER_NAME);
+
 		// Generate some random metrics
 		Random random = new Random();
 		while (true) {
@@ -59,9 +66,13 @@ public class GraphiteReporterExample {
 			Thread.sleep(random.nextInt(80));
 			split.stop();
 
+			counter1.increase(random.nextInt(50));
+
 			split = stopwatch2.start();
 			Thread.sleep(random.nextInt(20));
 			split.stop();
+
+			counter2.increase(random.nextInt(30));
 		}
 	}
 }
