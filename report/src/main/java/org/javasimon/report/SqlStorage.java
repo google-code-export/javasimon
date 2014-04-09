@@ -1,5 +1,6 @@
 package org.javasimon.report;
 
+import org.javasimon.SimonException;
 import org.javasimon.StopwatchSample;
 import org.javasimon.CounterSample;
 import org.skife.jdbi.v2.DBI;
@@ -115,6 +116,8 @@ public class SqlStorage implements DbStorage {
 		try {
 			h.execute(CREATE_STOPWATCH_TABLE);
 			h.execute(CREATE_COUNTER_TABLE);
+		} catch (Exception e) {
+			throw new SimonException(e);
 		} finally {
 			h.close();
 		}
@@ -145,7 +148,6 @@ public class SqlStorage implements DbStorage {
 						stopwatchSample.getStandardDeviation(),
 						stopwatchSample.getVariance(),
 						stopwatchSample.getVarianceN());
-
 			}
 		} finally {
 			h.close();
