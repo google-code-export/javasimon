@@ -14,22 +14,22 @@ import java.util.List;
  * instance to connect to database.
  *
  * <p>
- * <code>SqlReporter</code> can create tables for data by itself or leave this task for the administrator.
- * The desired behaviour can be changed using methods {@link SqlReporter#createTables()}
- * or {@link SqlReporter#setCreateTables(boolean)}. By default SqlReport does not
+ * <code>DbReporter</code> can create tables for data by itself or leave this task for the administrator.
+ * The desired behaviour can be changed using methods {@link DbReporter#createTables()}
+ * or {@link DbReporter#setCreateTables(boolean)}. By default SqlReport does not
  * create tables in the database
  *
  * <p>
- * <code>SqlReporter</code> can remove all existing data from the tables or simply append
- * new data. This behaviour can be changed using methods {@link SqlReporter#append()} or
- * {@link SqlReporter#setAppendData(boolean)}
+ * <code>DbReporter</code> can remove all existing data from the tables or simply append
+ * new data. This behaviour can be changed using methods {@link DbReporter#append()} or
+ * {@link DbReporter#setAppendData(boolean)}
  *
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
-public class SqlReporter extends ScheduledReporter<SqlReporter> {
+public class DbReporter extends ScheduledReporter<DbReporter> {
 
 	/** Sql storage used to store samples to a database */
-	private SqlStorage sqlStorage;
+	private DbStorage dbStorage;
 
 	/** Whether to append or replace existing data */
 	private boolean appendData;
@@ -37,44 +37,44 @@ public class SqlReporter extends ScheduledReporter<SqlReporter> {
 	/** Whether to create tables or use existing */
 	private boolean createTables;
 
-	private SqlReporter(Manager manager) {
+	private DbReporter(Manager manager) {
 		super(manager);
 	}
 
 	/**
-	 * Create an instance of <code>SqlReporter</code> for the specified manager.
+	 * Create an instance of <code>DbReporter</code> for the specified manager.
 	 *
-	 * @param manager manager that will be used by the new instance of <code>SqlReporter</code>
-	 * @return a new instance of <code>SqlReporter</code>
+	 * @param manager manager that will be used by the new instance of <code>DbReporter</code>
+	 * @return a new instance of <code>DbReporter</code>
 	 */
-	public static SqlReporter forManager(Manager manager) {
-		return new SqlReporter(manager);
+	public static DbReporter forManager(Manager manager) {
+		return new DbReporter(manager);
 	}
 
 	/**
-	 * Create an instance of <code>SqlReporter</code> for the specified manager.
+	 * Create an instance of <code>DbReporter</code> for the specified manager.
 	 *
-	 * @return a new instance <code>SqlReporter</code>
+	 * @return a new instance <code>DbReporter</code>
 	 */
-	public static SqlReporter forDefaultManager() {
+	public static DbReporter forDefaultManager() {
 		return forManager(SimonManager.manager());
 	}
 
 	@Override
 	protected void report(List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples) {
 		long timestamp = getTimeSource().getTime();
-		sqlStorage.storeCounter(timestamp, counterSamples);
-		sqlStorage.storeStopwatch(timestamp, stopwatchSamples);
+		dbStorage.storeCounters(timestamp, counterSamples);
+		dbStorage.storeStopwatches(timestamp, stopwatchSamples);
 	}
 
 	@Override
 	protected void onStart() {
 		if (createTables) {
-			sqlStorage.createTables();
+			dbStorage.createTables();
 		}
 
 		if (!appendData) {
-			sqlStorage.removeAll();
+			dbStorage.removeAll();
 		}
 	}
 
@@ -83,16 +83,16 @@ public class SqlReporter extends ScheduledReporter<SqlReporter> {
 
 	}
 
-	SqlStorage getSqlStorage() {
-		return sqlStorage;
+	DbStorage getDbStorage() {
+		return dbStorage;
 	}
 
 	/**
 	 * Create tables on reporter start.
 	 *
-	 * @return this instance of <code>SqlReporter</code>
+	 * @return this instance of <code>DbReporter</code>
 	 */
-	public SqlReporter createTables() {
+	public DbReporter createTables() {
 		createTables = true;
 		return this;
 	}
@@ -116,13 +116,13 @@ public class SqlReporter extends ScheduledReporter<SqlReporter> {
 	}
 
 	/**
-	 * Set <code>SqlStorage</code> instance that will be used by this reporter.
+	 * Set <code>DbStorage</code> instance that will be used by this reporter.
 	 *
 	 * @param storage sql storage instance that will be used by this reporter
-	 * @return this instance of <code>SqlReporter</code>
+	 * @return this instance of <code>DbReporter</code>
 	 */
-	SqlReporter storage(SqlStorage storage) {
-		this.sqlStorage = storage;
+	public DbReporter storage(DbStorage storage) {
+		this.dbStorage = storage;
 		return this;
 	}
 
@@ -130,23 +130,23 @@ public class SqlReporter extends ScheduledReporter<SqlReporter> {
 	 * Set data source that will be used to access the database.
 	 *
 	 * @param dataSource data source that will be sued to access the database
-	 * @return this instance of <code>SqlReporter</code>
+	 * @return this instance of <code>DbReporter</code>
 	 */
-	public SqlReporter dataSource(DataSource dataSource) {
+	DbReporter dataSource(DataSource dataSource) {
 		if (dataSource == null) {
 			throw new IllegalArgumentException("dataSource should be not null");
 		}
 
-		sqlStorage = new SqlStorageImpl(dataSource);
+		dbStorage = new SqlStorage(dataSource);
 		return this;
 	}
 
 	/**
 	 * Append new data to data already existing in the database.
 	 *
-	 * @return this instance of <code>SqlReporter</code>
+	 * @return this instance of <code>DbReporter</code>
 	 */
-	public SqlReporter append() {
+	public DbReporter append() {
 		this.appendData = true;
 		return this;
 	}

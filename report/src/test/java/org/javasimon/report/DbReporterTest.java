@@ -20,73 +20,73 @@ import static org.mockito.Mockito.when;
 /**
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
-public class SqlReporterTest {
+public class DbReporterTest {
 
-	private SqlReporter sqlReporter;
-	private SqlStorage sqlStorage;
+	private DbReporter dbReporter;
+	private DbStorage dbStorage;
 	private Manager manager;
 	private TimeSource timeSource;
 
 	@BeforeMethod
 	public void beforeMethod() {
-		sqlStorage = mock(SqlStorage.class);
+		dbStorage = mock(DbStorage.class);
 		manager = mock(Manager.class);
 		timeSource = mock(TimeSource.class);
 
-		sqlReporter = SqlReporter.forManager(manager)
+		dbReporter = DbReporter.forManager(manager)
 				.timeSource(timeSource)
-				.storage(sqlStorage)
+				.storage(dbStorage)
 				.append()
 				.createTables();
 	}
 
 	@Test
 	public void testGetManager() {
-		Assert.assertSame(sqlReporter.getManager(), manager);
+		Assert.assertSame(dbReporter.getManager(), manager);
 	}
 
 	@Test
 	public void testForDefaultManager() {
-		Assert.assertSame(SqlReporter.forDefaultManager().getManager(), SimonManager.manager());
+		Assert.assertSame(DbReporter.forDefaultManager().getManager(), SimonManager.manager());
 	}
 
 	@Test
 	public void testGetStorage() {
-		Assert.assertSame(sqlReporter.getSqlStorage(), sqlStorage);
+		Assert.assertSame(dbReporter.getDbStorage(), dbStorage);
 	}
 
 	@Test
 	public void testIsCreateTables() {
-		Assert.assertTrue(sqlReporter.isCreateTables());
+		Assert.assertTrue(dbReporter.isCreateTables());
 	}
 
 	@Test
 	public void testSetCreateTables() {
-		sqlReporter.setCreateTables(false);
-		Assert.assertFalse(sqlReporter.isCreateTables());
+		dbReporter.setCreateTables(false);
+		Assert.assertFalse(dbReporter.isCreateTables());
 	}
 
 	@Test
 	public void testSetDataSource() {
 		DataSource dataSource = mock(DataSource.class);
-		SqlReporter reporter = SqlReporter.forDefaultManager().dataSource(dataSource);
-		Assert.assertNotNull(reporter.getSqlStorage());
+		DbReporter reporter = DbReporter.forDefaultManager().dataSource(dataSource);
+		Assert.assertNotNull(reporter.getDbStorage());
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void testSetNullDataSource() {
-		sqlReporter.dataSource(null);
+		dbReporter.dataSource(null);
 	}
 
 	@Test
 	public void testGetIsAppendData() {
-		Assert.assertTrue(sqlReporter.isAppendData());
+		Assert.assertTrue(dbReporter.isAppendData());
 	}
 
 	@Test
 	public void testSetAppendData() {
-		sqlReporter.setAppendData(false);
-		Assert.assertFalse(sqlReporter.isAppendData());
+		dbReporter.setAppendData(false);
+		Assert.assertFalse(dbReporter.isAppendData());
 	}
 
 	@Test
@@ -98,35 +98,35 @@ public class SqlReporterTest {
 
 		when(timeSource.getTime()).thenReturn(timestamp);
 
-		sqlReporter.report(stopwatchesSamples, countersSamples);
+		dbReporter.report(stopwatchesSamples, countersSamples);
 
-		verify(sqlStorage).storeStopwatch(timestamp, stopwatchesSamples);
-		verify(sqlStorage).storeCounter(timestamp, countersSamples);
+		verify(dbStorage).storeStopwatches(timestamp, stopwatchesSamples);
+		verify(dbStorage).storeCounters(timestamp, countersSamples);
 	}
 
 	@Test
 	public void testAppendData() {
-		sqlReporter.onStart();
-		verify(sqlStorage, times(0)).removeAll();
+		dbReporter.onStart();
+		verify(dbStorage, times(0)).removeAll();
 	}
 
 	@Test
 	public void testNotAppendData() {
-		sqlReporter.setAppendData(false);
-		sqlReporter.onStart();
-		verify(sqlStorage).removeAll();
+		dbReporter.setAppendData(false);
+		dbReporter.onStart();
+		verify(dbStorage).removeAll();
 	}
 
 	@Test
 	public void testCreateTables() {
-		sqlReporter.onStart();
-		verify(sqlStorage).createTables();
+		dbReporter.onStart();
+		verify(dbStorage).createTables();
 	}
 
 	@Test
 	public void testNotCreateTables() {
-		sqlReporter.setCreateTables(false);
-		sqlReporter.onStart();
-		verify(sqlStorage, times(0)).createTables();
+		dbReporter.setCreateTables(false);
+		dbReporter.onStart();
+		verify(dbStorage, times(0)).createTables();
 	}
 }

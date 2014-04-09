@@ -24,9 +24,9 @@ import static org.mockito.Mockito.when;
 /**
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
-public class SqlStorageImplTest {
+public class SqlStorageTest {
 
-	private SqlStorageImpl sqlStorage;
+	private SqlStorage sqlStorage;
 	private DBI dbi;
 
 	/**
@@ -64,7 +64,7 @@ public class SqlStorageImplTest {
 			}
 		});
 
-		sqlStorage = new SqlStorageImpl(dbi);
+		sqlStorage = new SqlStorage(dbi);
 		sqlStorage.deleteTables();
 		sqlStorage.createTables();
 
@@ -107,7 +107,7 @@ public class SqlStorageImplTest {
 		sample.setVariance(2.0);
 		sample.setVarianceN(2.0);
 
-		sqlStorage.storeStopwatch(timestamp, Arrays.asList(sample));
+		sqlStorage.storeStopwatches(timestamp, Arrays.asList(sample));
 
 		List<TimedStopwatchSample> stopwatchSamples = sqlStorage.getStopwatchSamples();
 		Assert.assertEquals(stopwatchSamples.size(), 1);
@@ -134,7 +134,7 @@ public class SqlStorageImplTest {
 		sample.setIncrementSum(3);
 		sample.setDecrementSum(2);
 
-		sqlStorage.storeCounter(timestamp, Arrays.asList(sample));
+		sqlStorage.storeCounters(timestamp, Arrays.asList(sample));
 
 		List<TimedCounterSample> stopwatchSamples = sqlStorage.getCounterSamples();
 		Assert.assertEquals(stopwatchSamples.size(), 1);
@@ -149,8 +149,8 @@ public class SqlStorageImplTest {
 		CounterSample counterSample = new CounterSample();
 		StopwatchSample stopwatchSample = new StopwatchSample();
 
-		sqlStorage.storeCounter(100, Arrays.asList(counterSample));
-		sqlStorage.storeStopwatch(100, Arrays.asList(stopwatchSample));
+		sqlStorage.storeCounters(100, Arrays.asList(counterSample));
+		sqlStorage.storeStopwatches(100, Arrays.asList(stopwatchSample));
 
 		sqlStorage.removeAll();
 
