@@ -4,6 +4,7 @@ import org.javasimon.CounterSample;
 import org.javasimon.Manager;
 import org.javasimon.SimonManager;
 import org.javasimon.StopwatchSample;
+import org.javasimon.utils.SimonUtils;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -95,7 +96,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
 		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
 		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
-		printStream.printf(getLocale(), "                 last reset = %d ns%n", sample.getLastReset());
+		printStream.printf(getLocale(), "                 last reset = %s%n",    ns(sample.getLastReset()));
 		printStream.printf(getLocale(), "                    counter = %d%n",    sample.getCounter());
 		printStream.printf(getLocale(), "                        min = %d%n",    sample.getMin());
 		printStream.printf(getLocale(), "                        max = %d%n",    sample.getMax());
@@ -120,21 +121,29 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
 		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
 		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
-		printStream.printf(getLocale(), "                 last reset = %d ns%n", sample.getLastReset());
-		printStream.printf(getLocale(), "                      total = %d ns%n", sample.getTotal());
+		printStream.printf(getLocale(), "                 last reset = %s%n",    ns(sample.getLastReset()));
+		printStream.printf(getLocale(), "                      total = %s%n",    ns(sample.getTotal()));
 		printStream.printf(getLocale(), "                      count = %d%n",    sample.getCounter());
-		printStream.printf(getLocale(), "                  min split = %d ns%n", sample.getMin());
-		printStream.printf(getLocale(), "                  max split = %d ns%n", sample.getMax());
+		printStream.printf(getLocale(), "                  min split = %s%n",    ns(sample.getMin()));
+		printStream.printf(getLocale(), "                  max split = %s%n",    ns(sample.getMax()));
 		printStream.printf(getLocale(), "        min split timestamp = %d ms%n", sample.getMinTimestamp());
 		printStream.printf(getLocale(), "        max split timestamp = %d ms%n", sample.getMaxTimestamp());
 		printStream.printf(getLocale(), "              active splits = %d%n",    sample.getActive());
 		printStream.printf(getLocale(), "          max active splits = %d ms%n", sample.getMaxActive());
 		printStream.printf(getLocale(), "max active splits timestamp = %d ms%n", sample.getMaxActiveTimestamp());
-		printStream.printf(getLocale(), "                 last split = %d ns%n", sample.getLast());
-		printStream.printf(getLocale(), "                  mean time = %2.2f%n", sample.getMean());
+		printStream.printf(getLocale(), "                 last split = %s%n",    ns(sample.getLast()));
+		printStream.printf(getLocale(), "                  mean time = %s%n",    ns(sample.getMean()));
 		printStream.printf(getLocale(), "              std deviation = %2.2f%n", sample.getStandardDeviation());
 		printStream.printf(getLocale(), "                   variance = %2.2f%n", sample.getVariance());
 		printStream.printf(getLocale(), "                 n variance = %2.2f%n", sample.getVarianceN());
+	}
+
+	private String ns(long nsTime) {
+		return SimonUtils.presentNanoTime(nsTime);
+	}
+
+	private String ns(double nsTime) {
+		return SimonUtils.presentNanoTime(nsTime);
 	}
 
 	private void printStopwatchesBanner() {
