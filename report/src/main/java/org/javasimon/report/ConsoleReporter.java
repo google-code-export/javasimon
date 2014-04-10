@@ -93,17 +93,17 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 
 	private void reportSample(CounterSample sample) {
 		printStream.println(sample.getName());
-		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
-		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
-		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
-		printStream.printf(getLocale(), "                 last reset = %s%n",    ns(sample.getLastReset()));
-		printStream.printf(getLocale(), "                    counter = %d%n",    sample.getCounter());
-		printStream.printf(getLocale(), "                        min = %d%n",    sample.getMin());
-		printStream.printf(getLocale(), "                        max = %d%n",    sample.getMax());
-		printStream.printf(getLocale(), "              min timestamp = %d ms%n", sample.getMinTimestamp());
-		printStream.printf(getLocale(), "              max timestamp = %d ms%n", sample.getMaxTimestamp());
-		printStream.printf(getLocale(), "              increment sum = %d%n",    sample.getIncrementSum());
-		printStream.printf(getLocale(), "              decrement sum = %d%n",    sample.getDecrementSum());
+		printStream.printf(getLocale(), "                       note = %s%n", sample.getNote());
+		printStream.printf(getLocale(), "                first usage = %s%n", timestamp(sample.getFirstUsage()));
+		printStream.printf(getLocale(), "                 last usage = %s%n", timestamp(sample.getLastUsage()));
+		printStream.printf(getLocale(), "                 last reset = %s%n", ns(sample.getLastReset()));
+		printStream.printf(getLocale(), "                    counter = %d%n", sample.getCounter());
+		printStream.printf(getLocale(), "                        min = %d%n", sample.getMin());
+		printStream.printf(getLocale(), "                        max = %d%n", sample.getMax());
+		printStream.printf(getLocale(), "              min timestamp = %s%n", timestamp(sample.getMinTimestamp()));
+		printStream.printf(getLocale(), "              max timestamp = %s%n", timestamp(sample.getMaxTimestamp()));
+		printStream.printf(getLocale(), "              increment sum = %d%n", sample.getIncrementSum());
+		printStream.printf(getLocale(), "              decrement sum = %d%n", sample.getDecrementSum());
 	}
 
 	private void printCountersBanner() {
@@ -119,23 +119,27 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	private void reportSample(StopwatchSample sample) {
 		printStream.println(sample.getName());
 		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
-		printStream.printf(getLocale(), "                first usage = %d ms%n", sample.getFirstUsage());
-		printStream.printf(getLocale(), "                 last usage = %d ms%n", sample.getLastUsage());
+		printStream.printf(getLocale(), "                first usage = %s%n",    timestamp(sample.getFirstUsage()));
+		printStream.printf(getLocale(), "                 last usage = %s%n",    timestamp(sample.getLastUsage()));
 		printStream.printf(getLocale(), "                 last reset = %s%n",    ns(sample.getLastReset()));
 		printStream.printf(getLocale(), "                      total = %s%n",    ns(sample.getTotal()));
 		printStream.printf(getLocale(), "                      count = %d%n",    sample.getCounter());
 		printStream.printf(getLocale(), "                  min split = %s%n",    ns(sample.getMin()));
 		printStream.printf(getLocale(), "                  max split = %s%n",    ns(sample.getMax()));
-		printStream.printf(getLocale(), "        min split timestamp = %d ms%n", sample.getMinTimestamp());
-		printStream.printf(getLocale(), "        max split timestamp = %d ms%n", sample.getMaxTimestamp());
+		printStream.printf(getLocale(), "        min split timestamp = %s%n",    timestamp(sample.getMinTimestamp()));
+		printStream.printf(getLocale(), "        max split timestamp = %s%n",    timestamp(sample.getMaxTimestamp()));
 		printStream.printf(getLocale(), "              active splits = %d%n",    sample.getActive());
-		printStream.printf(getLocale(), "          max active splits = %d ms%n", sample.getMaxActive());
-		printStream.printf(getLocale(), "max active splits timestamp = %d ms%n", sample.getMaxActiveTimestamp());
+		printStream.printf(getLocale(), "          max active splits = %d%n",    sample.getMaxActive());
+		printStream.printf(getLocale(), "max active splits timestamp = %s%n",    timestamp(sample.getMaxActiveTimestamp()));
 		printStream.printf(getLocale(), "                 last split = %s%n",    ns(sample.getLast()));
 		printStream.printf(getLocale(), "                  mean time = %s%n",    ns(sample.getMean()));
 		printStream.printf(getLocale(), "              std deviation = %2.2f%n", sample.getStandardDeviation());
 		printStream.printf(getLocale(), "                   variance = %2.2f%n", sample.getVariance());
 		printStream.printf(getLocale(), "                 n variance = %2.2f%n", sample.getVarianceN());
+	}
+
+	private String timestamp(long timestamp) {
+		return SimonUtils.presentTimestamp(timestamp);
 	}
 
 	private String ns(long nsTime) {
@@ -145,6 +149,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	private String ns(double nsTime) {
 		return SimonUtils.presentNanoTime(nsTime);
 	}
+
 
 	private void printStopwatchesBanner() {
 		printStream.println("== Stopwatches ==");
