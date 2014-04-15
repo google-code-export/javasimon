@@ -1,9 +1,12 @@
 package org.javasimon.examples.report;
 
-import org.javasimon.*;
+import org.javasimon.Counter;
+import org.javasimon.Manager;
+import org.javasimon.SimonManager;
+import org.javasimon.Stopwatch;
+import org.javasimon.examples.ExampleUtils;
 import org.javasimon.report.ConsoleReporter;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class ConsoleReporterExample {
 
 	public static void main(String... args) throws Exception {
-		// Create instance of ConsoleReader
+		// Create instance of ConsoleReporter
 		ConsoleReporter reporter = ConsoleReporter.forDefaultManager()
-				.to(System.out) // can be avoided if printing should be done to console
-				.name("testReporter")
-				.every(5, TimeUnit.SECONDS);
+			.to(System.out) // can be avoided if printing should be done to console
+			.name("testReporter")
+			.every(5, TimeUnit.SECONDS);
 
 		// Start reporter
 		reporter.start();
@@ -30,16 +33,8 @@ public class ConsoleReporterExample {
 		Stopwatch s2 = manager.getStopwatch("example.stopwatch2");
 		Counter counter = manager.getCounter("example.counter");
 
-		Random random = new Random();
 		while (true) {
-			Split split = s1.start();
-			Thread.sleep(random.nextInt(500));
-			split.stop();
-
-			split = s2.start();
-			Thread.sleep(random.nextInt(500));
-			split.stop();
-
+			ExampleUtils.randomWork(s1, s2);
 			counter.increase();
 		}
 	}

@@ -1,25 +1,29 @@
 package org.javasimon.examples.report;
 
-import org.javasimon.*;
+import org.javasimon.Counter;
+import org.javasimon.Manager;
+import org.javasimon.SimonManager;
+import org.javasimon.Stopwatch;
+import org.javasimon.examples.ExampleUtils;
 import org.javasimon.report.CsvReporter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
  * This example demo shows how to use CsvReporter class to store collected metrics to
  * CSV files.
- *
+ * <p/>
  * It creates several stopwatches and counters emulates metrics and then outputs
  * the result metric file to console. *
  *
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
 public class CsvReporterExample {
+
 	// How long metrics will be collected in ms
 	private static final long WORK_TIME = 40000;
 	// Name of the reporter
@@ -28,11 +32,11 @@ public class CsvReporterExample {
 	public static void main(String... args) throws Exception {
 		// Create and configure the reporter
 		CsvReporter reporter = CsvReporter
-				.forDefaultManager()
-				.append()
-				.separator(';')
-				.every(5, TimeUnit.SECONDS)
-				.name(REPORTER_NAME);
+			.forDefaultManager()
+			.append()
+			.separator(';')
+			.every(5, TimeUnit.SECONDS)
+			.name(REPORTER_NAME);
 
 		reporter.start();
 
@@ -44,27 +48,16 @@ public class CsvReporterExample {
 		Counter counter1 = manager.getCounter("counter1");
 		Counter counter2 = manager.getCounter("counter2");
 
-		Random random = new Random();
-		long startTime = System.currentTimeMillis();
-		while (System.currentTimeMillis() < startTime + WORK_TIME) {
-			Split split = stopwatch1.start();
-			Thread.sleep(random.nextInt(100));
-			split.stop();
+		long timeToFinish = System.currentTimeMillis() + WORK_TIME;
+		long timeForNextCountdownReport = System.currentTimeMillis();
 
-			split = stopwatch2.start();
-			Thread.sleep(random.nextInt(200));
-			split.stop();
+		while (System.currentTimeMillis() < timeToFinish) {
+			ExampleUtils.randomWork(stopwatch1, stopwatch2);
+			ExampleUtils.randomWork(counter1, counter2);
 
-			for (int i = 0; i < 10; i++) {
-				if (random.nextBoolean()) {
-					counter1.increase();
-				}
-			}
-
-			for (int i = 0; i < 20; i++) {
-				if (random.nextBoolean()) {
-					counter2.increase();
-				}
+			if (System.currentTimeMillis() > timeForNextCountdownReport) {
+				System.out.println("Time to finish (ms): " + (timeToFinish - System.currentTimeMillis()));
+				timeForNextCountdownReport = System.currentTimeMillis() + 5000;
 			}
 		}
 
