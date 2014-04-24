@@ -92,18 +92,20 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(CounterSample sample) {
-		printStream.println(sample.getName());
-		printStream.printf(getLocale(), "                       note = %s%n", sample.getNote());
-		printStream.printf(getLocale(), "                first usage = %s%n", timestamp(sample.getFirstUsage()));
-		printStream.printf(getLocale(), "                 last usage = %s%n", timestamp(sample.getLastUsage()));
-		printStream.printf(getLocale(), "                 last reset = %s%n", ns(sample.getLastReset()));
-		printStream.printf(getLocale(), "                    counter = %d%n", sample.getCounter());
-		printStream.printf(getLocale(), "                        min = %d%n", sample.getMin());
-		printStream.printf(getLocale(), "                        max = %d%n", sample.getMax());
-		printStream.printf(getLocale(), "              min timestamp = %s%n", timestamp(sample.getMinTimestamp()));
-		printStream.printf(getLocale(), "              max timestamp = %s%n", timestamp(sample.getMaxTimestamp()));
-		printStream.printf(getLocale(), "              increment sum = %d%n", sample.getIncrementSum());
-		printStream.printf(getLocale(), "              decrement sum = %d%n", sample.getDecrementSum());
+		printStream.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%d, " +
+				"max=%d, min-timestamp=%s, max-timestamp=%s, increment-sum=%d, decrement-sum=%d%n",
+				sample.getName(),
+				sample.getNote(),
+				timestamp(sample.getFirstUsage()),
+				timestamp(sample.getLastUsage()),
+				ns(sample.getLastReset()),
+				sample.getCounter(),
+				sample.getMin(),
+				sample.getMax(),
+				timestamp(sample.getMinTimestamp()),
+				timestamp(sample.getMaxTimestamp()),
+				sample.getIncrementSum(),
+				sample.getDecrementSum());
 	}
 
 	private void printCountersBanner() {
@@ -117,25 +119,28 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(StopwatchSample sample) {
-		printStream.println(sample.getName());
-		printStream.printf(getLocale(), "                       note = %s%n",    sample.getNote());
-		printStream.printf(getLocale(), "                first usage = %s%n",    timestamp(sample.getFirstUsage()));
-		printStream.printf(getLocale(), "                 last usage = %s%n",    timestamp(sample.getLastUsage()));
-		printStream.printf(getLocale(), "                 last reset = %s%n",    ns(sample.getLastReset()));
-		printStream.printf(getLocale(), "                      total = %s%n",    ns(sample.getTotal()));
-		printStream.printf(getLocale(), "                      count = %d%n",    sample.getCounter());
-		printStream.printf(getLocale(), "                  min split = %s%n",    ns(sample.getMin()));
-		printStream.printf(getLocale(), "                  max split = %s%n",    ns(sample.getMax()));
-		printStream.printf(getLocale(), "        min split timestamp = %s%n",    timestamp(sample.getMinTimestamp()));
-		printStream.printf(getLocale(), "        max split timestamp = %s%n",    timestamp(sample.getMaxTimestamp()));
-		printStream.printf(getLocale(), "              active splits = %d%n",    sample.getActive());
-		printStream.printf(getLocale(), "          max active splits = %d%n",    sample.getMaxActive());
-		printStream.printf(getLocale(), "max active splits timestamp = %s%n",    timestamp(sample.getMaxActiveTimestamp()));
-		printStream.printf(getLocale(), "                 last split = %s%n",    ns(sample.getLast()));
-		printStream.printf(getLocale(), "                  mean time = %s%n",    ns(sample.getMean()));
-		printStream.printf(getLocale(), "              std deviation = %2.2f%n", sample.getStandardDeviation());
-		printStream.printf(getLocale(), "                   variance = %2.2f%n", sample.getVariance());
-		printStream.printf(getLocale(), "                 n variance = %2.2f%n", sample.getVarianceN());
+		printStream.printf(getLocale(), "Stopwatch(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, total=%s, " +
+				"count=%d, min-split=%s, max-split=%s, min-timestamp=%s, max-timestamp=%s, active=%d, max-active=%d, " +
+				"max-active-timestamp=%s, last=%s, mean-time=%s, std-deviation=%2.2f, variance=%2.2f, n-variance=%2.2f%n",
+				sample.getName(),
+				sample.getNote(),
+				timestamp(sample.getFirstUsage()),
+				timestamp(sample.getLastUsage()),
+				ns(sample.getLastReset()),
+				ns(sample.getTotal()),
+				sample.getCounter(),
+				ns(sample.getMin()),
+				ns(sample.getMax()),
+				timestamp(sample.getMinTimestamp()),
+				timestamp(sample.getMaxTimestamp()),
+				sample.getActive(),
+				sample.getMaxActive(),
+				timestamp(sample.getMaxActiveTimestamp()),
+				ns(sample.getLast()),
+				ns(sample.getMean()),
+				sample.getStandardDeviation(),
+				sample.getVariance(),
+				sample.getVarianceN());
 	}
 
 	private String timestamp(long timestamp) {
