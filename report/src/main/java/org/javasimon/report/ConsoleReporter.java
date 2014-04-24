@@ -6,7 +6,7 @@ import org.javasimon.SimonManager;
 import org.javasimon.StopwatchSample;
 import org.javasimon.utils.SimonUtils;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -17,11 +17,11 @@ import java.util.List;
  */
 public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	/** Print stream that is used to report current Simons state */
-	private PrintStream printStream;
+	private PrintWriter printWriter;
 
 	private ConsoleReporter(Manager manager) {
 		super(manager);
-		to(System.out);
+		to(new PrintWriter(System.out));
 	}
 
 	/**
@@ -49,12 +49,12 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	 * @param out <code>PrintStream</code> that will be used by this reporter
 	 * @return this instance of ConsoleReporter
 	 */
-	public ConsoleReporter to(PrintStream out) {
+	public ConsoleReporter to(PrintWriter out) {
 		if (out == null) {
 			throw new IllegalArgumentException("PrintStream should not be null");
 		}
 
-		this.printStream = out;
+		this.printWriter = out;
 		return this;
 	}
 
@@ -63,8 +63,8 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	 *
 	 * @return the instance of <code>PrintStream</code> used by this reporter
 	 */
-	public PrintStream getPrintStream() {
-		return printStream;
+	PrintWriter getWriter() {
+		return printWriter;
 	}
 
 	@Override
@@ -73,6 +73,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 		reportStopwatches(stopwatchSamples);
 		printCountersBanner();
 		reportCounters(counterSamples);
+		printWriter.flush();
 	}
 
 	@Override
@@ -92,7 +93,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(CounterSample sample) {
-		printStream.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%d, " +
+		printWriter.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%d, " +
 				"max=%d, min-timestamp=%s, max-timestamp=%s, increment-sum=%d, decrement-sum=%d%n",
 				sample.getName(),
 				sample.getNote(),
@@ -109,7 +110,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void printCountersBanner() {
-		printStream.println("== Counters ==");
+		printWriter.println("== Counters ==");
 	}
 
 	private void reportStopwatches(List<StopwatchSample> stopwatchSamples) {
@@ -119,7 +120,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(StopwatchSample sample) {
-		printStream.printf(getLocale(), "Stopwatch(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, total=%s, " +
+		printWriter.printf(getLocale(), "Stopwatch(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, total=%s, " +
 				"count=%d, min-split=%s, max-split=%s, min-timestamp=%s, max-timestamp=%s, active=%d, max-active=%d, " +
 				"max-active-timestamp=%s, last=%s, mean-time=%s, std-deviation=%2.2f, variance=%2.2f, n-variance=%2.2f%n",
 				sample.getName(),
@@ -155,8 +156,7 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 		return SimonUtils.presentNanoTime(nsTime);
 	}
 
-
 	private void printStopwatchesBanner() {
-		printStream.println("== Stopwatches ==");
+		printWriter.println("== Stopwatches ==");
 	}
 }
