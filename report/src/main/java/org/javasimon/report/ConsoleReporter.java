@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Reporter that outputs current Simons' values to console. Also supports reporting to other
- * source in the same format (by using method {@link org.javasimon.report.ConsoleReporter#to(java.io.PrintStream)}.
+ * source in the same format (by using method {@link org.javasimon.report.ConsoleReporter#to(java.io.PrintWriter)}.
  *
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
