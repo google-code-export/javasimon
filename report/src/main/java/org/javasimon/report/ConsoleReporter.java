@@ -16,6 +16,16 @@ import java.util.List;
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
 public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
+
+	/** Undefined max count value in CounterSample */
+	private static final long UNDEF_MAX = Long.MIN_VALUE;
+
+	/** Undefined min count value in CounterSample */
+	private static final long UNDEF_MIN = Long.MAX_VALUE;
+
+	/** Printed if value is undefined */
+	private static final String UNDEF = "undef";
+
 	/** Print stream that is used to report current Simons state */
 	private PrintWriter printWriter;
 
@@ -93,20 +103,36 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(CounterSample sample) {
-		printWriter.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%d, " +
-				"max=%d, min-timestamp=%s, max-timestamp=%s, increment-sum=%d, decrement-sum=%d%n",
+		printWriter.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%s, " +
+				"max=%s, min-timestamp=%s, max-timestamp=%s, increment-sum=%d, decrement-sum=%d%n",
 				sample.getName(),
 				sample.getNote(),
 				timestamp(sample.getFirstUsage()),
 				timestamp(sample.getLastUsage()),
 				ns(sample.getLastReset()),
 				sample.getCounter(),
-				sample.getMin(),
-				sample.getMax(),
+				min(sample.getMin()),
+				max(sample.getMax()),
 				timestamp(sample.getMinTimestamp()),
 				timestamp(sample.getMaxTimestamp()),
 				sample.getIncrementSum(),
 				sample.getDecrementSum());
+	}
+
+	private String max(long max) {
+		return printOrUndef(max, UNDEF_MAX);
+	}
+
+	private String printOrUndef(long val, long undefVal) {
+		if (val == undefVal) {
+			return UNDEF;
+		}
+
+		return Long.toString(val);
+	}
+
+	private String min(long min) {
+		return printOrUndef(min, UNDEF_MIN);
 	}
 
 	private void printCountersBanner() {
