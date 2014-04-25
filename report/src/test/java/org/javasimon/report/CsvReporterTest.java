@@ -160,6 +160,21 @@ public class CsvReporterTest {
 				csv(COUNTERS_FIELDS));
 	}
 
+	@Test
+	public void testCountersHeaderWasWrittenToWriter() throws Exception {
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
+		reporter.countersWriter(printWriter);
+		reporter.onStart();
+		reporter.onStop();
+		String actual = new String(byteArrayOutputStream.toByteArray());
+		Assert.assertEquals(actual, line(COUNTERS_FIELDS));
+	}
+
+	private String line(String str) {
+		return String.format("%s%n", str);
+	}
+
 	private String csv(String... lines) {
 		StringBuilder sb = new StringBuilder();
 		for (String line : lines) {
@@ -257,6 +272,17 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
 				csv(STOPWATCH_FIELDS));
+	}
+
+	@Test
+	public void testStopwatchesHeaderWasWrittenToWriter() throws Exception {
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
+		reporter.stopwatchesWriter(printWriter);
+		reporter.onStart();
+		reporter.onStop();
+		String actual = new String(byteArrayOutputStream.toByteArray());
+		Assert.assertEquals(actual, line(STOPWATCH_FIELDS));
 	}
 
 	@Test
