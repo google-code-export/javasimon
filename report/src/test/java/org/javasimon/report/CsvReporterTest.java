@@ -225,6 +225,33 @@ public class CsvReporterTest {
 	}
 
 	@Test
+	public void testUndefMinMax() throws Exception {
+		reporter.onStart();
+
+		CounterSample sample = new CounterSample();
+		sample.setName("counter.name");
+		sample.setNote(null);
+		sample.setFirstUsage(50);
+		sample.setLastUsage(500);
+		sample.setLastReset(20);
+		sample.setCounter(1);
+		sample.setMin(ScheduledReporter.UNDEF_MIN);
+		sample.setMax(ScheduledReporter.UNDEF_MAX);
+		sample.setMinTimestamp(100);
+		sample.setMaxTimestamp(200);
+		sample.setIncrementSum(3);
+		sample.setDecrementSum(2);
+
+		when(timeSource.getTime()).thenReturn(1000L);
+		reporter.report(Collections.EMPTY_LIST, Arrays.asList(sample));
+
+		reporter.onStop();
+		Assert.assertEquals(fileToString(COUNTERS_FILE),
+				csv(COUNTERS_FIELDS,
+						"1000;\"counter.name\";;50;500;20;1;;;100;200;3;2"));
+	}
+
+	@Test
 	public void testStopwatchesHeaderWasWritten() throws Exception {
 		reporter.onStart();
 		reporter.onStop();

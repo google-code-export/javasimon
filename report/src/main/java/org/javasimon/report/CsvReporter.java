@@ -130,12 +130,28 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				counterSample.getLastUsage(),
 				counterSample.getLastReset(),
 				counterSample.getCounter(),
-				counterSample.getMin(),
-				counterSample.getMax(),
+				min(counterSample.getMin()),
+				max(counterSample.getMax()),
 				counterSample.getMinTimestamp(),
 				counterSample.getMaxTimestamp(),
 				counterSample.getIncrementSum(),
 				counterSample.getDecrementSum());
+	}
+
+	private Object max(long max) {
+		return valOrUndef(max, UNDEF_MAX);
+	}
+
+	private Object valOrUndef(long val, long undef) {
+		if (val == undef) {
+			return "";
+		}
+
+		return val;
+	}
+
+	private Object min(long min) {
+		return valOrUndef(min, UNDEF_MIN);
 	}
 
 	private void writeFields(PrintWriter writer, Object... fields) {
@@ -151,7 +167,12 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	private String format(Object value) {
 		if (value instanceof String) {
-			return "\"" + value + "\"";
+			String strVal = (String) value;
+			if (strVal.isEmpty()) {
+				return "";
+			}
+
+			return "\"" + strVal + "\"";
 		} else {
 			return value == null ? "" : value.toString();
 		}

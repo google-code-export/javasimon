@@ -26,6 +26,12 @@ import java.util.concurrent.*;
  */
 public abstract class ScheduledReporter<R extends ScheduledReporter> {
 
+	/** Undefined max count value in CounterSample */
+	protected static final long UNDEF_MAX = Long.MIN_VALUE;
+
+	/** Undefined min count value in CounterSample */
+	protected static final long UNDEF_MIN = Long.MAX_VALUE;
+
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledReporter.class);
 
 	static final long DEFAULT_DURATION = 1;

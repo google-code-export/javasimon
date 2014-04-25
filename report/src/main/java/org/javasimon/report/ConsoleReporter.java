@@ -17,12 +17,6 @@ import java.util.List;
  */
 public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 
-	/** Undefined max count value in CounterSample */
-	private static final long UNDEF_MAX = Long.MIN_VALUE;
-
-	/** Undefined min count value in CounterSample */
-	private static final long UNDEF_MIN = Long.MAX_VALUE;
-
 	/** Printed if value is undefined */
 	private static final String UNDEF = "undef";
 
