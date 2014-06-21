@@ -7,6 +7,7 @@ import org.javasimon.Stopwatch;
 import org.javasimon.examples.ExampleUtils;
 import org.javasimon.report.ConsoleReporter;
 
+import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,7 +20,7 @@ public class ConsoleReporterExample {
 	public static void main(String... args) throws Exception {
 		// Create instance of ConsoleReporter
 		ConsoleReporter reporter = ConsoleReporter.forDefaultManager()
-			.to(System.out) // can be avoided if printing should be done to console
+			.to(new PrintWriter(System.out)) // can be avoided if printing should be done to console
 			.name("testReporter")
 			.every(5, TimeUnit.SECONDS);
 

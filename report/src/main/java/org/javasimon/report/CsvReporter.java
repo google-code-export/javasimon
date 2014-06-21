@@ -31,6 +31,8 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	/** Default name of a CSV file where stopwatches' samples will be written */
 	public static final String DEFAULT_STOPWATCHES_FILE = "stopwatches.csv";
+
+	/** Default separator in CSV file */
 	public static final char DEFAULT_SEPARATOR = ',';
 
 	/** Path to a file where counters' samples will be written */
@@ -128,12 +130,28 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				counterSample.getLastUsage(),
 				counterSample.getLastReset(),
 				counterSample.getCounter(),
-				counterSample.getMin(),
-				counterSample.getMax(),
+				min(counterSample.getMin()),
+				max(counterSample.getMax()),
 				counterSample.getMinTimestamp(),
 				counterSample.getMaxTimestamp(),
 				counterSample.getIncrementSum(),
 				counterSample.getDecrementSum());
+	}
+
+	private Object max(long max) {
+		return valOrUndef(max, UNDEF_MAX);
+	}
+
+	private Object valOrUndef(long val, long undef) {
+		if (val == undef) {
+			return "";
+		}
+
+		return val;
+	}
+
+	private Object min(long min) {
+		return valOrUndef(min, UNDEF_MIN);
 	}
 
 	private void writeFields(PrintWriter writer, Object... fields) {
@@ -149,7 +167,12 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	private String format(Object value) {
 		if (value instanceof String) {
-			return "\"" + value + "\"";
+			String strVal = (String) value;
+			if (strVal.isEmpty()) {
+				return "";
+			}
+
+			return "\"" + strVal + "\"";
 		} else {
 			return value == null ? "" : value.toString();
 		}
@@ -161,8 +184,8 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 			boolean countersFileExists = fileExists(countersFile);
 			boolean stopwatchesFileExists = fileExists(stopwatchesFile);
 
-			countersWriter = createPrintWriter(countersFile);
-			stopwatchesWriter = createPrintWriter(stopwatchesFile);
+			countersWriter = createWriter(countersFile, countersWriter);
+			stopwatchesWriter = createWriter(stopwatchesFile, stopwatchesWriter);
 
 			if (!appendFile || !countersFileExists) {
 				writeCountersHeader();
@@ -171,12 +194,24 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 			if (!appendFile || !stopwatchesFileExists) {
 				writeStopwatchesHeader();
 			}
-		} catch (IOException e) {
-			throw new SimonException(e);
+		} catch (FileNotFoundException ex) {
+			throw new SimonException(ex);
 		}
 	}
 
+	private PrintWriter createWriter(String fileName, PrintWriter writer) throws FileNotFoundException {
+		if (fileName == null) {
+			return writer;
+		}
+
+		return new PrintWriter(new FileOutputStream(fileName, appendFile));
+	}
+
 	private boolean fileExists(String fileName) {
+		if (fileName == null) {
+			return false;
+		}
+
 		File file = new File(fileName);
 		return file.exists();
 	}
@@ -202,11 +237,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				"stdDev",
 				"variance",
 				"varianceN");
-	}
-
-	private PrintWriter createPrintWriter(String filePath) throws IOException {
-		FileWriter writer = new FileWriter(filePath, appendFile);
-		return new PrintWriter(new BufferedWriter(writer));
 	}
 
 	private void writeCountersHeader() {
@@ -239,10 +269,8 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 
 	@Override
 	protected void onStop() {
-		countersWriter.flush();
-		countersWriter.close();
-		stopwatchesWriter.flush();
-		stopwatchesWriter.close();
+		closeWriter(countersWriter);
+		closeWriter(stopwatchesWriter);
 	}
 
 	/**
@@ -257,6 +285,23 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		}
 
 		this.countersFile = countersFile;
+		if (countersWriter != null) {
+			closeWriter(countersWriter);
+			countersWriter = null;
+		}
+		return this;
+	}
+
+	/**
+	 * Set writer that will be used by the <code>CsvReporter</code> to output collected counters
+	 * metrics.
+	 *
+	 * @param countersWriter writer that will be used
+	 * @return this instance of <code>CsvReporter</code>
+	 */
+	public CsvReporter countersWriter(PrintWriter countersWriter) {
+		this.countersFile = null;
+		this.countersWriter = countersWriter;
 		return this;
 	}
 
@@ -281,8 +326,31 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 		}
 
 		this.stopwatchesFile = stopwatchesFile;
+		if (stopwatchesWriter != null) {
+			closeWriter(stopwatchesWriter);
+			stopwatchesWriter = null;
+		}
 		return this;
 	}
+
+	private void closeWriter(PrintWriter writer) {
+		writer.flush();
+		writer.close();
+	}
+
+	/**
+	 * Set writer that will be used by the <code>CsvReporter</code> to output collected stopwatches
+	 * metrics.
+	 *
+	 * @param stopwatchesWriter writer that will be used
+	 * @return this instance of <code>CsvReporter</code>
+	 */
+	public CsvReporter stopwatchesWriter(PrintWriter stopwatchesWriter) {
+		this.stopwatchesFile = null;
+		this.stopwatchesWriter = stopwatchesWriter;
+		return this;
+	}
+
 
 	/**
 	 * Gets path to a CSV file where stopwatches' samples will be written.

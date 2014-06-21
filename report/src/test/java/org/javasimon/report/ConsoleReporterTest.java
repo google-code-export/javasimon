@@ -6,7 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import static org.mockito.Mockito.mock;
 
@@ -36,15 +36,10 @@ public class ConsoleReporterTest {
 	}
 
 	@Test
-	public void testGetDefaultPrintStream() {
-		Assert.assertEquals(consoleReporter.getPrintStream(), System.out);
-	}
-
-	@Test
-	 public void testSetPrintStream() {
-		PrintStream stream = mock(PrintStream.class);
-		consoleReporter.to(stream);
-		Assert.assertEquals(consoleReporter.getPrintStream(), stream);
+	public void testSetPrintWriter() {
+		PrintWriter writer = mock(PrintWriter.class);
+		consoleReporter.to(writer);
+		Assert.assertEquals(consoleReporter.getWriter(), writer);
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
