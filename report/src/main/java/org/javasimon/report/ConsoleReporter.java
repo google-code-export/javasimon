@@ -97,13 +97,12 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(CounterSample sample) {
-		printWriter.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, counter=%d, min=%s, " +
+		printWriter.printf(getLocale(), "Counter(name=%s, note=%s, first-usage=%s, last-usage=%s, counter=%d, min=%s, " +
 				"max=%s, min-timestamp=%s, max-timestamp=%s, increment-sum=%d, decrement-sum=%d%n",
 				sample.getName(),
 				sample.getNote(),
 				timestamp(sample.getFirstUsage()),
 				timestamp(sample.getLastUsage()),
-				ns(sample.getLastReset()),
 				sample.getCounter(),
 				min(sample.getMin()),
 				max(sample.getMax()),
@@ -140,14 +139,13 @@ public final class ConsoleReporter extends ScheduledReporter<ConsoleReporter> {
 	}
 
 	private void reportSample(StopwatchSample sample) {
-		printWriter.printf(getLocale(), "Stopwatch(name=%s, note=%s, first-usage=%s, last-usage=%s, last-reset=%s, total=%s, " +
+		printWriter.printf(getLocale(), "Stopwatch(name=%s, note=%s, first-usage=%s, last-usage=%s, total=%s, " +
 				"count=%d, min-split=%s, max-split=%s, min-timestamp=%s, max-timestamp=%s, active=%d, max-active=%d, " +
 				"max-active-timestamp=%s, last=%s, mean-time=%s, std-deviation=%2.2f, variance=%2.2f, n-variance=%2.2f%n",
 				sample.getName(),
 				sample.getNote(),
 				timestamp(sample.getFirstUsage()),
 				timestamp(sample.getLastUsage()),
-				ns(sample.getLastReset()),
 				ns(sample.getTotal()),
 				sample.getCounter(),
 				ns(sample.getMin()),

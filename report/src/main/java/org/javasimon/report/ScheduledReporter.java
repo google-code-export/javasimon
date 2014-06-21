@@ -24,6 +24,7 @@ import java.util.concurrent.*;
  *
  * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
+@SuppressWarnings("unchecked")
 public abstract class ScheduledReporter<R extends ScheduledReporter> {
 
 	/** Undefined max count value in CounterSample */
@@ -74,7 +75,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 *     <li>Set <code>filter</code> that accepts all Simons</li>
 	 * </ul>
 	 *
-	 * @param manager
+	 * @param manager Simon Manager
 	 */
 	protected ScheduledReporter(Manager manager) {
 		setManager(manager);
@@ -273,8 +274,8 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 		public void run() {
 			try {
 				Collection<Simon> simons = manager.getSimons(filter);
-				List<CounterSample> counterSamples = new ArrayList<CounterSample>();
-				List<StopwatchSample> stopwatchSamples = new ArrayList<StopwatchSample>();
+				List<CounterSample> counterSamples = new ArrayList<>();
+				List<StopwatchSample> stopwatchSamples = new ArrayList<>();
 
 				for (Simon simon : simons) {
 					if (simon instanceof Counter) {
@@ -355,8 +356,7 @@ public abstract class ScheduledReporter<R extends ScheduledReporter> {
 	 */
 	public synchronized void stop() {
 		if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
-			boolean interruptIfRunning = false;
-			scheduledFuture.cancel(interruptIfRunning);
+			scheduledFuture.cancel(false);
 			onStop();
 		} else {
 			throw new IllegalStateException("Reporter has not been started");

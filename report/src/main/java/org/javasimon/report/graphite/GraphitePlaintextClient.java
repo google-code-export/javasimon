@@ -3,11 +3,10 @@ package org.javasimon.report.graphite;
 import org.javasimon.CounterSample;
 import org.javasimon.SimonException;
 import org.javasimon.StopwatchSample;
-import org.javasimon.utils.SimonUtils;
+import org.javasimon.clock.ClockUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.SocketFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -18,6 +17,8 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
+
+import javax.net.SocketFactory;
 
 /**
  * Implementation of Graphite client that uses plaintext protocol.
@@ -68,7 +69,7 @@ public class GraphitePlaintextClient implements GraphiteClient {
 	 * Constructor. Creates an instance with default SocketFactory.
 	 *
 	 * @param serverAddress address of a Graphite server
-	 * @param sampleToPath converter of samples to pathes in Graphite tree
+	 * @param sampleToPath converter of samples to paths in Graphite tree
 	 */
 	public GraphitePlaintextClient(InetSocketAddress serverAddress, SampleToPath sampleToPath) {
 		this(serverAddress, SocketFactory.getDefault(), sampleToPath);
@@ -79,7 +80,7 @@ public class GraphitePlaintextClient implements GraphiteClient {
 	 *
 	 * @param serverAddress address of a Graphite server
 	 * @param socketFactory socket factory that will be used to get a socket to communicate with a Graphite server
-	 * @param sampleToPath converter of samples to pathes in Graphite tree
+	 * @param sampleToPath converter of samples to paths in Graphite tree
 	 */
 	public GraphitePlaintextClient(InetSocketAddress serverAddress, SocketFactory socketFactory, SampleToPath sampleToPath) {
 		this.serverAddress = serverAddress;
@@ -107,7 +108,7 @@ public class GraphitePlaintextClient implements GraphiteClient {
 	public void send(long timestamp, List<StopwatchSample> stopwatchSamples, List<CounterSample> counterSamples) {
 		logger.debug("Sending data to a Graphite server");
 
-		long msTimestamp = timestamp / SimonUtils.MILLIS_IN_SECOND;
+		long msTimestamp = timestamp / ClockUtils.MILLIS_IN_SECOND;
 
 		try {
 			for (StopwatchSample stopwatchSample : stopwatchSamples) {
@@ -128,7 +129,7 @@ public class GraphitePlaintextClient implements GraphiteClient {
 		sendSample(path(simonPath, "count"), counterSample.getCounter(), timestamp);
 		sendSample(path(simonPath, "min"), counterSample.getMin(), timestamp);
 		sendSample(path(simonPath, "max"), counterSample.getMax(), timestamp);
-		sendSample(path(simonPath, "incrementSum"),counterSample.getIncrementSum(), timestamp);
+		sendSample(path(simonPath, "incrementSum"), counterSample.getIncrementSum(), timestamp);
 		sendSample(path(simonPath, "decrementSum"), counterSample.getDecrementSum(), timestamp);
 	}
 
@@ -166,7 +167,7 @@ public class GraphitePlaintextClient implements GraphiteClient {
 	private void sendSample(String path, String val, long timestamp) throws IOException {
 		writer.write(path);
 		writer.write(' ');
-		writer.write(val.toString());
+		writer.write(val);
 		writer.write(' ');
 		writer.write(Long.toString(timestamp));
 		writer.write('\n');

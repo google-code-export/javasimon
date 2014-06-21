@@ -105,7 +105,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				stopwatchSample.getNote(),
 				stopwatchSample.getFirstUsage(),
 				stopwatchSample.getLastUsage(),
-				stopwatchSample.getLastReset(),
 				stopwatchSample.getTotal(),
 				stopwatchSample.getMin(),
 				stopwatchSample.getMax(),
@@ -128,7 +127,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				counterSample.getNote(),
 				counterSample.getFirstUsage(),
 				counterSample.getLastUsage(),
-				counterSample.getLastReset(),
 				counterSample.getCounter(),
 				min(counterSample.getMin()),
 				max(counterSample.getMax()),
@@ -223,7 +221,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				"note",
 				"firstUsage",
 				"lastUsage",
-				"lastReset",
 				"total",
 				"min",
 				"max",
@@ -246,7 +243,6 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 				"note",
 				"firstUsage",
 				"lastUsage",
-				"lastReset",
 				"counter",
 				"min",
 				"max",
@@ -362,7 +358,7 @@ public final class CsvReporter extends ScheduledReporter<CsvReporter> {
 	}
 
 	/**
-	 * Set seprator in CSV files.
+	 * Set separator in CSV files.
 	 *
 	 * @param separator separator in CSV files
 	 * @return this instance of <code>CsvReporter</code>

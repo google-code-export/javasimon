@@ -38,7 +38,7 @@ public class SqlStorageTest {
 
 	@BeforeMethod
 	public void beforeMethod() {
-		handlesToClose = new ArrayList<Handle>();
+		handlesToClose = new ArrayList<>();
 
 		DataSource ds = JdbcConnectionPool.create("jdbc:h2:mem:test",
 				"username",
@@ -54,6 +54,7 @@ public class SqlStorageTest {
 		when(dbi.open()).then(new Answer<Object>() {
 			@Override
 			public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+				// TODO to many "dbi" stuff here and in outer contexts
 				IDBI dbi = (IDBI) invocationOnMock.getMock();
 				// Spy on handle
 				Handle handle = spy(realDbi.open());
@@ -92,7 +93,6 @@ public class SqlStorageTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setTotal(100);
 		sample.setMin(2);
 		sample.setMax(10);
@@ -125,7 +125,6 @@ public class SqlStorageTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setCounter(1);
 		sample.setMin(2);
 		sample.setMax(10);
@@ -158,11 +157,5 @@ public class SqlStorageTest {
 		Assert.assertEquals(sqlStorage.getStopwatchSamples().size(), 0);
 
 		verifyAllHandlesClosed();
-	}
-
-	private StopwatchSample sample(int total) {
-		StopwatchSample sample = new StopwatchSample();
-		sample.setTotal(total);
-		return sample;
 	}
 }

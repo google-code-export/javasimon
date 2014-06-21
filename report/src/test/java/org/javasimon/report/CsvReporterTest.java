@@ -29,8 +29,8 @@ public class CsvReporterTest {
 	private static final String COUNTERS_FILE = "countersFile.csv";
 	private static final String STOPWATCHES_FILE = "stopwatchesFile.csv";
 	private static final char SEPARATOR = ';';
-	private static final String COUNTERS_FIELDS = "time;name;note;firstUsage;lastUsage;lastReset;counter;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum";
-	private static final String STOPWATCH_FIELDS = "time;name;note;firstUsage;lastUsage;lastReset;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN";
+	private static final String COUNTERS_FIELDS = "time;name;note;firstUsage;lastUsage;counter;min;max;minTimestamp;maxTimestamp;incrementSum;decrementSum";
+	private static final String STOPWATCH_FIELDS = "time;name;note;firstUsage;lastUsage;total;min;max;minTimestamp;maxTimestamp;active;maxActive;maxActiveTimestamp;last;mean;stdDev;variance;varianceN";
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
@@ -103,7 +103,7 @@ public class CsvReporterTest {
 
 	@Test
 	public void testGetDefaultStopwatchesFile() {
-		Assert.assertEquals(reporter.forDefaultManager().getStopwatchesFile(), CsvReporter.DEFAULT_STOPWATCHES_FILE);
+		Assert.assertEquals(CsvReporter.forDefaultManager().getStopwatchesFile(), CsvReporter.DEFAULT_STOPWATCHES_FILE);
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
@@ -194,7 +194,6 @@ public class CsvReporterTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setCounter(1);
 		sample.setMin(0);
 		sample.setMax(3);
@@ -209,7 +208,7 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
 				csv(COUNTERS_FIELDS,
-				"1000;\"counter.name\";\"note\";50;500;20;1;0;3;100;200;3;2"));
+				"1000;\"counter.name\";\"note\";50;500;1;0;3;100;200;3;2"));
 	}
 
 	@Test
@@ -221,7 +220,6 @@ public class CsvReporterTest {
 		sample.setNote(null);
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setCounter(1);
 		sample.setMin(0);
 		sample.setMax(3);
@@ -236,7 +234,7 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
 				csv(COUNTERS_FIELDS,
-						"1000;\"counter.name\";;50;500;20;1;0;3;100;200;3;2"));
+						"1000;\"counter.name\";;50;500;1;0;3;100;200;3;2"));
 	}
 
 	@Test
@@ -248,7 +246,6 @@ public class CsvReporterTest {
 		sample.setNote(null);
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setCounter(1);
 		sample.setMin(ScheduledReporter.UNDEF_MIN);
 		sample.setMax(ScheduledReporter.UNDEF_MAX);
@@ -263,7 +260,7 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(COUNTERS_FILE),
 				csv(COUNTERS_FIELDS,
-						"1000;\"counter.name\";;50;500;20;1;;;100;200;3;2"));
+						"1000;\"counter.name\";;50;500;1;;;100;200;3;2"));
 	}
 
 	@Test
@@ -292,7 +289,6 @@ public class CsvReporterTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setTotal(100);
 		sample.setMin(2);
 		sample.setMax(10);
@@ -314,7 +310,7 @@ public class CsvReporterTest {
 		reporter.onStop();
 		Assert.assertEquals(fileToString(STOPWATCHES_FILE),
 				csv(STOPWATCH_FIELDS,
-					"1000;\"stopwatch.name\";\"note\";50;500;20;100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;3.0"));
+					"1000;\"stopwatch.name\";\"note\";50;500;100;2;10;200;300;3;10;400;5;8.0;4.0;2.0;3.0"));
 	}
 
 	@Test

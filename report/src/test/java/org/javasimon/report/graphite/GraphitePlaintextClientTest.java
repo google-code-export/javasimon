@@ -64,6 +64,7 @@ public class GraphitePlaintextClientTest {
 
 	@Test(expectedExceptions = SimonException.class)
 	public void testSimonExceptionThrownOnIOException() throws IOException {
+		//noinspection unchecked
 		when(socketFactory.createSocket(TEST_HOST, TEST_PORT)).thenThrow(IOException.class);
 		graphiteClient.connect();
 	}
@@ -137,7 +138,6 @@ public class GraphitePlaintextClientTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setTotal(100);
 		sample.setMin(2);
 		sample.setMax(10);
@@ -191,7 +191,6 @@ public class GraphitePlaintextClientTest {
 		sample.setNote("note");
 		sample.setFirstUsage(50);
 		sample.setLastUsage(500);
-		sample.setLastReset(20);
 		sample.setCounter(1);
 		sample.setMin(2);
 		sample.setMax(10);

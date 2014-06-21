@@ -74,7 +74,6 @@ window.javasimon=javasimon;
 			// Dates
 			row=this.fnAppendRow(section.eTableBody);
 			this.fnAppendSimonLabelValueCell(row, "First Use", "firstUsage");
-			this.fnAppendSimonLabelValueCell(row, "Last Reset", "lastReset");
 			this.fnAppendSimonLabelValueCell(row, "Last Use", "lastUsage");
 		},
 		fnRenderStopwatchDiv:function() {

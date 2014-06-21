@@ -3,17 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-
-	<groupId>org.javasimon</groupId>
 	<artifactId>javasimon-report</artifactId>
-	<version>3.4.1-SNAPSHOT</version>
 	<name>JavaSimon Reporting</name>
 	<url>http://maven.apache.org</url>
 
 	<parent>
 		<groupId>org.javasimon</groupId>
 		<artifactId>javasimon-parent</artifactId>
-		<version>3.4.1-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
