@@ -49,7 +49,7 @@
 <p>
 	Simon names form a hierarchy similar to Java Logging API. It is possible to disable whole subtrees of Simons
 	to minimiaze performance penalty (mostly neglectable) or use {@link org.javasimon.utils.SimonUtils} to
-	perform other operations on the hierarchy (print Simon tree, aggregations, recursive Simon reset, ...).
+	perform other operations on the hierarchy (print Simon tree, aggregations, ...).
 </p>
 
 <p>
@@ -92,7 +92,7 @@ jdbc(+): Unknown Simon:  [org.javasimon.jdbc INHERIT]
 <ul>
 	<li>
 		{@link org.javasimon.javaee.SimonServletFilter} measures HTTP requests and provides simple way how to
-		display tree of all Simons or reset the Manager. Filter can also report long requets along with all splits
+		display tree of all Simons or clear the Manager. Filter can also report long requets along with all splits
 		collected during the request.
 	</li>
 	<li>
@@ -108,7 +108,7 @@ jdbc(+): Unknown Simon:  [org.javasimon.jdbc INHERIT]
 		Spring Web MVC integration is provided in {@link org.javasimon.spring.webmvc}.
 	</li>
 	<li>
-		JDBC4 proxy driver is provided ({@link org.javasimon.jdbc4.Driver}) - monitors virtually all JDBC API calls.
+		JDBC proxy driver is provided ({@link org.javasimon.jdbc4.Driver}) - monitors virtually all JDBC API calls.
 		In simple scenarios only the change of the JDBC URL is required - just add {@code simon:} in front of the real
 		name of the driver (e.g. {@code jdbc:simon:h2:...}). In more complex scenarios configuration change may be
 		required - for example, original data source class has to be switched to Java Simon data source and original

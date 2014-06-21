@@ -33,11 +33,9 @@ abstract class AbstractSimon implements Simon {
 
 	private Simon parent;
 
-	private final List<Simon> children = new CopyOnWriteArrayList<Simon>();
+	private final List<Simon> children = new CopyOnWriteArrayList<>();
 
 	private String note;
-
-	private long resetTimestamp;
 
 	private AttributesSupport attributesSupport = new AttributesSupport();
 
@@ -93,6 +91,10 @@ abstract class AbstractSimon implements Simon {
 		return name;
 	}
 
+	public final Manager getManager() {
+		return manager;
+	}
+
 	public synchronized final void setState(SimonState state, boolean overrule) {
 		if (state == null) {
 			throw new IllegalArgumentException();
@@ -133,26 +135,6 @@ abstract class AbstractSimon implements Simon {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * <b>Thread-safety:</b> May be called with write lock already acquired (from {@link #sampleAndReset()} for instance.
-	 * Must not re-acquire write lock, but always releases it, as it calls callbacks out of the critical section already.
-	 *
-	 * @deprecated will be removed in 4.0
-	 */
-	@Override
-	@Deprecated
-	public void reset() {
-		synchronized (this) {
-			resetTimestamp = System.currentTimeMillis();
-			concreteReset();
-		}
-		if (manager != null) {
-			manager.callback().onSimonReset(this);
-		}
-	}
-
-	/**
 	 * Updates usage statistics.
 	 *
 	 * @param now current millis timestamp
@@ -162,14 +144,6 @@ abstract class AbstractSimon implements Simon {
 		if (firstUsage == 0) {
 			firstUsage = lastUsage;
 		}
-	}
-
-	abstract void concreteReset();
-
-	@Override
-	@Deprecated
-	public synchronized long getLastReset() {
-		return resetTimestamp;
 	}
 
 	@Override
@@ -282,7 +256,6 @@ abstract class AbstractSimon implements Simon {
 		sample.setNote(note);
 		sample.setFirstUsage(firstUsage);
 		sample.setLastUsage(lastUsage);
-		sample.setLastReset(resetTimestamp);
 	}
 
 	// incremental Simons methods
@@ -292,7 +265,7 @@ abstract class AbstractSimon implements Simon {
 
 	Simon getAndResetSampleKey(Object key, Simon newSimon) {
 		if (incrementalSimons == null) {
-			incrementalSimons = new HashMap<Object, Simon>();
+			incrementalSimons = new HashMap<>();
 		}
 		Simon simon = incrementalSimons.get(key);
 		incrementalSimons.put(key, newSimon);

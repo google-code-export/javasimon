@@ -4,7 +4,6 @@ import static org.javasimon.callback.logging.LogTemplates.disabled;
 import static org.javasimon.callback.logging.LogTemplates.everyNSeconds;
 import static org.javasimon.callback.logging.LogTemplates.toSLF4J;
 
-import org.javasimon.Simon;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 import org.javasimon.StopwatchSample;
@@ -13,7 +12,7 @@ import org.javasimon.callback.logging.LogTemplate;
 
 /**
  * Callback which stores data in buckets to compute quantiles.
- * The {@link #createBuckets(org.javasimon.Stopwatch) should be
+ * The {@link #createBuckets(org.javasimon.Stopwatch)} should be
  * implemented to configure the width and resolution of buckets.
  * Then {@link Buckets} are stored among Simon attributes.
  * There are 2 implementations:
@@ -23,10 +22,10 @@ import org.javasimon.callback.logging.LogTemplate;
  * </ul>
  *
  * @author gquintana
- * @noinspection UnusedDeclaration
  * @see Buckets
  * @since 3.2
  */
+@SuppressWarnings("UnusedDeclaration")
 public abstract class QuantilesCallback extends CallbackSkeleton {
 
 	/** Simon attribute name of the buckets stored in Simons after warmup time. */
@@ -112,7 +111,7 @@ public abstract class QuantilesCallback extends CallbackSkeleton {
 
 	/**
 	 * Create Buckets for given stopwatch.
-	 * Call {@link #createBuckets(org.javasimon.Stopwatch, long, long, int) to create a new buckets object.
+	 * Call {@link #createBuckets(org.javasimon.Stopwatch, long, long, int)} to create a new buckets object.
 	 *
 	 * @param stopwatch Stopwatch
 	 * @return Buckets
@@ -164,17 +163,5 @@ public abstract class QuantilesCallback extends CallbackSkeleton {
 	@Override
 	public void onStopwatchAdd(Stopwatch stopwatch, Split split, StopwatchSample sample) {
 		onStopwatchSplit(split.getStopwatch(), split);
-	}
-
-	/** When the Stopwatch is reset, so are the buckets. */
-	@Override
-	public void onSimonReset(Simon simon) {
-		if (simon instanceof Stopwatch) {
-			Stopwatch stopwatch = (Stopwatch) simon;
-			Buckets buckets = getBuckets(stopwatch);
-			if (buckets != null) {
-				buckets.clear();
-			}
-		}
 	}
 }

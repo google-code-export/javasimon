@@ -1,55 +1,66 @@
 package org.javasimon.callback.logging;
 
+import org.javasimon.clock.Clock;
+import org.javasimon.Split;
+import org.javasimon.clock.ClockUtils;
+
 import java.util.logging.Level;
 
-import org.javasimon.Split;
-import org.javasimon.utils.SimonUtils;
-
 /**
- * Factory of {@link LogTemplate}s.
- * Produces various implementations
+ * Factory for various implementations of {@link LogTemplate}s.
  *
  * @author gquintana
  */
 public class LogTemplates {
-	/**
-	 * Produces a disabled log template wich never log anything
-	 */
-	public static <C> DisabledLogTemplate<C> disabled() {
+
+	/** Produces a disabled log template which never logs anything. */
+	public static <C> LogTemplate<C> disabled() {
 		return DisabledLogTemplate.getInstance();
 	}
 
 	/**
-	 * Produces a log template which logs something every N split
+	 * Produces a log template which logs something every N split.
 	 *
 	 * @param delegateLogger Concrete log template
 	 * @param period N value, period
 	 * @return Logger
 	 */
-	public static <C> CounterLogTemplate<C> everyNSplits(LogTemplate<C> delegateLogger, int period) {
-		return new CounterLogTemplate<C>(delegateLogger, period);
+	public static <C> LogTemplate<C> everyNSplits(LogTemplate<C> delegateLogger, int period) {
+		return new CounterLogTemplate<>(delegateLogger, period);
 	}
 
 	/**
-	 * Produces a log template which logs something at most every N milliseconds
+	 * Produces a log template which logs something at most every N milliseconds.
 	 *
 	 * @param delegateLogger Concrete log template
 	 * @param period N value in milliseconds, maximum period
 	 * @return Logger
 	 */
-	public static <C> PeriodicLogTemplate<C> everyNMilliseconds(LogTemplate<C> delegateLogger, long period) {
-		return new PeriodicLogTemplate<C>(delegateLogger, period);
+	public static <C> LogTemplate<C> everyNMilliseconds(LogTemplate<C> delegateLogger, long period) {
+		return new PeriodicLogTemplate<>(delegateLogger, period);
 	}
 
 	/**
-	 * Produces a log template which logs something at most every N secoonds
+	 * Produces a log template which logs something at most every N milliseconds.
+	 *
+	 * @param delegateLogger Concrete log template
+	 * @param period N value in milliseconds, maximum period
+	 * @param clock clock to get current system time
+	 * @return Logger
+	 */
+	static <C> LogTemplate<C> everyNMilliseconds(LogTemplate<C> delegateLogger, long period, Clock clock) {
+		return new PeriodicLogTemplate<>(delegateLogger, period, clock);
+	}
+
+	/**
+	 * Produces a log template which logs something at most every N secoonds.
 	 *
 	 * @param delegateLogger Concrete log template
 	 * @param period N value in seconds, maximum period
 	 * @return Logger
 	 */
-	public static <C> PeriodicLogTemplate<C> everyNSeconds(LogTemplate<C> delegateLogger, long period) {
-		return everyNMilliseconds(delegateLogger, period * SimonUtils.MILLIS_IN_SECOND);
+	public static <C> LogTemplate<C> everyNSeconds(LogTemplate<C> delegateLogger, long period) {
+		return everyNMilliseconds(delegateLogger, period * ClockUtils.MILLIS_IN_SECOND);
 	}
 
 	/**
@@ -63,11 +74,11 @@ public class LogTemplates {
 	public static <C> SLF4JLogTemplate<C> toSLF4J(String loggerName, String levelName, String markerName) {
 		levelName = levelName.toLowerCase();
 		if ("debug".equals(levelName)) {
-			return new SLF4JLogTemplate.Debug<C>(loggerName, markerName);
+			return new SLF4JLogTemplate.Debug<>(loggerName, markerName);
 		} else if ("info".equals(levelName)) {
-			return new SLF4JLogTemplate.Info<C>(loggerName, markerName);
+			return new SLF4JLogTemplate.Info<>(loggerName, markerName);
 		} else if ("warn".equals(levelName)) {
-			return new SLF4JLogTemplate.Warn<C>(loggerName, markerName);
+			return new SLF4JLogTemplate.Warn<>(loggerName, markerName);
 		} else {
 			throw new IllegalArgumentException("Invalid level name " + levelName);
 		}
@@ -92,7 +103,7 @@ public class LogTemplates {
 	 * @return Logger
 	 */
 	public static <C> JULLogTemplate<C> toJUL(String loggerName, Level level) {
-		return new JULLogTemplate<C>(loggerName, level);
+		return new JULLogTemplate<>(loggerName, level);
 	}
 
 	/**
@@ -114,6 +125,6 @@ public class LogTemplates {
 	 * @return Logger
 	 */
 	public static SplitThresholdLogTemplate whenSplitLongerThanMilliseconds(LogTemplate<Split> delegateLogger, long threshold) {
-		return whenSplitLongerThanNanoseconds(delegateLogger, threshold * SimonUtils.NANOS_IN_MILLIS);
+		return whenSplitLongerThanNanoseconds(delegateLogger, threshold * ClockUtils.NANOS_IN_MILLIS);
 	}
 }

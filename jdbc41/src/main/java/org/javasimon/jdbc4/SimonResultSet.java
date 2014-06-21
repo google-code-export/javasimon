@@ -26,7 +26,7 @@ import org.javasimon.SimonManager;
 import org.javasimon.Split;
 
 /**
- * Simon JDBC4 proxy result set implementation class.
+ * Simon JDBC proxy result set implementation class.
  *
  * @author Radovan Sninsky
  * @author <a href="mailto:virgo47@gmail.com">Richard "Virgo" Richter</a>
@@ -54,7 +54,7 @@ public final class SimonResultSet implements ResultSet {
 	 */
 	public SimonResultSet(ResultSet rset, SimonStatement stmt, String prefix, String stmtPrefix) {
 		this.rset = rset;
-		this.wrapperSupport = new WrapperSupport<ResultSet>(rset, ResultSet.class);
+		this.wrapperSupport = new WrapperSupport<>(rset, ResultSet.class);
 		this.stmt = stmt;
 		this.stmtPrefix = stmtPrefix;
 

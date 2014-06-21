@@ -14,7 +14,7 @@ import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 
 /**
- * Simon JDBC4 proxy statement implementation class.
+ * Simon JDBC proxy statement implementation class.
  *
  * @author Radovan Sninsky
  * @author <a href="mailto:virgo47@gmail.com">Richard "Virgo" Richter</a>
@@ -25,7 +25,7 @@ public class SimonStatement implements Statement {
 	/**
 	 * List of batched SQL statements.
 	 */
-	protected final List<String> batchSql = new LinkedList<String>();
+	protected final List<String> batchSql = new LinkedList<>();
 
 	/**
 	 * SQL connection.
@@ -67,7 +67,7 @@ public class SimonStatement implements Statement {
 		this.conn = conn;
 		this.stmt = stmt;
 		this.prefix = prefix;
-		this.wrapperSupport = new WrapperSupport<Statement>(stmt, Statement.class);
+		this.wrapperSupport = new WrapperSupport<>(stmt, Statement.class);
 		split = SimonManager.getStopwatch(prefix + ".stmt").start();
 	}
 
@@ -159,7 +159,7 @@ public class SimonStatement implements Statement {
 	 * @param sql sql command
 	 * @return database rows and columns
 	 * @throws java.sql.SQLException if real calls fails
-	 * @see org.javasimon.jdbc4.SimonResultSet
+	 * @see SimonResultSet
 	 */
 	@Override
 	public final ResultSet executeQuery(String sql) throws SQLException {

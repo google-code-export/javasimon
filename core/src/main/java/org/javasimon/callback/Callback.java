@@ -2,6 +2,7 @@ package org.javasimon.callback;
 
 import org.javasimon.Counter;
 import org.javasimon.CounterSample;
+import org.javasimon.Manager;
 import org.javasimon.Simon;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
@@ -21,7 +22,7 @@ import java.util.Map;
  * <p/>
  * Callbacks can be configured via Manager configuration facility. (Configuration part is still rather WIP.)
  * <p/>
- * Callback can have a lifecycle supported with methods {@link #initialize()} and {@link #cleanup()}.
+ * Callback can have a lifecycle supported with methods {@link #initialize(Manager)} and {@link #cleanup()}.
  * Callback is initialized when it is attached to the manager (anywhere in the callback tree) and
  * deinitialized when the callback is removed from the callback tree.
  *
@@ -30,7 +31,7 @@ import java.util.Map;
 public interface Callback {
 
 	/** Lifecycle method called when the callback is added to a manager. */
-	void initialize();
+	void initialize(Manager manager);
 
 	/**
 	 * Lifecycle method called when the callback is removed from the manager. It should implement
@@ -62,16 +63,6 @@ public interface Callback {
 	 * @param sample stopwatch sampled after the stop
 	 */
 	void onStopwatchStop(Split split, StopwatchSample sample);
-
-	/**
-	 * Simon reset event.
-	 *
-	 * @param simon reset Simon
-	 * @deprecated will be removed in 4.0. Use {@link org.javasimon.Stopwatch#sampleIncrement(Object)} (keyed sampling) instead.
-	 * TODO change link to Simon when done
-	 */
-	@Deprecated
-	void onSimonReset(Simon simon);
 
 	/**
 	 * Stopwatch add split event. {@link StopwatchSample} valid for the moment after the add is provided
@@ -168,15 +159,6 @@ public interface Callback {
 		/** Meta-action designating all actions (or any action in rules). */
 		ALL("all"),
 
-		/**
-		 * Reset of the Simon.
-		 *
-		 * @deprecated Will be removed in 4.0. Use {@link org.javasimon.Stopwatch#sampleIncrement(Object)} (keyed sampling) instead.
-		 * TODO change link to Simon when done
-		 */
-		@Deprecated
-		RESET("reset"),
-
 		/** Start of the stopwatch. */
 		STOPWATCH_START("start"),
 
@@ -210,7 +192,7 @@ public interface Callback {
 		/** Warning related to the manager. */
 		WARNING("warning");
 
-		private static Map<String, Event> codeValues = new HashMap<String, Event>();
+		private static Map<String, Event> codeValues = new HashMap<>();
 
 		private String code;
 

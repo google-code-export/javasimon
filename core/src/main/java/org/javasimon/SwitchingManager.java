@@ -99,4 +99,28 @@ public final class SwitchingManager implements Manager {
 	public void warning(String warning, Exception cause) {
 		manager.warning(warning, cause);
 	}
+
+	@Override
+	public long milliTime() {
+		return manager.milliTime();
+	}
+
+	@Override
+	public long nanoTime() {
+		return manager.nanoTime();
+	}
+
+	@Override
+	public long millisForNano(long nanos) {
+		return manager.millisForNano(nanos);
+	}
+
+	void purgeIncrementalSimonsOlderThan(long thresholdMs) {
+		// Store reference to current manager to avoid check-than-act
+		Manager currentManager = manager;
+
+		if (currentManager instanceof EnabledManager) {
+			((EnabledManager) currentManager).purgeIncrementalSimonsOlderThan(thresholdMs);
+		}
+	}
 }

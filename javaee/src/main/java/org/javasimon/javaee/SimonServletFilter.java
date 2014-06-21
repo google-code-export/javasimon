@@ -4,6 +4,7 @@ import org.javasimon.Manager;
 import org.javasimon.SimonManager;
 import org.javasimon.Split;
 import org.javasimon.callback.CallbackSkeleton;
+import org.javasimon.clock.ClockUtils;
 import org.javasimon.javaee.reqreporter.RequestReporter;
 import org.javasimon.source.DisabledMonitorSource;
 import org.javasimon.source.StopwatchSource;
@@ -134,7 +135,7 @@ public class SimonServletFilter implements Filter {
 	 * the callback that servlet is registering. Then even more callbacks registered from various
 	 * servlets in the same manager do not interfere.
 	 */
-	private final ThreadLocal<List<Split>> splitsThreadLocal = new ThreadLocal<List<Split>>();
+	private final ThreadLocal<List<Split>> splitsThreadLocal = new ThreadLocal<>();
 
 	/**
 	 * Callback that saves all splits in {@link #splitsThreadLocal} if {@link #reportThresholdNanos} is configured.
@@ -169,7 +170,7 @@ public class SimonServletFilter implements Filter {
 		String reportThreshold = filterConfig.getInitParameter(INIT_PARAM_REPORT_THRESHOLD_MS);
 		if (reportThreshold != null) {
 			try {
-				this.reportThresholdNanos = Long.parseLong(reportThreshold) * SimonUtils.NANOS_IN_MILLIS;
+				this.reportThresholdNanos = Long.parseLong(reportThreshold) * ClockUtils.NANOS_IN_MILLIS;
 				splitSaverCallback = new SplitSaverCallback();
 				manager.callback().addCallback(splitSaverCallback);
 			} catch (NumberFormatException e) {
@@ -185,9 +186,12 @@ public class SimonServletFilter implements Filter {
 	}
 
 	private void setStopwatchSourceProperties(FilterConfig filterConfig, StopwatchSource<HttpServletRequest> stopwatchSource) {
-		registerEnumConverter();
-
 		String properties = filterConfig.getInitParameter(INIT_PARAM_STOPWATCH_SOURCE_PROPS);
+		if (properties == null) {
+			return;
+		}
+
+		registerEnumConverter();
 		for (String keyValStr : properties.split(";")) {
 			String[] keyVal = keyValStr.split("=");
 			String key = keyVal[0];

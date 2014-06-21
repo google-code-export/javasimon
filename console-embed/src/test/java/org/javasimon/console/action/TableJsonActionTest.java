@@ -1,27 +1,26 @@
 package org.javasimon.console.action;
 
-import java.util.HashSet;
-import java.util.Set;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
-import org.javasimon.SimonManager;
 import org.javasimon.console.SimonData;
 import org.javasimon.console.TestActionContext;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Unit test for {@link TableJsonAction}
+ * Unit test for {@link TableJsonAction}.
  *
  * @author gquintana
  */
 public class TableJsonActionTest {
+
 	@BeforeClass
 	public static void setUpClass() {
 		SimonData.initialize();
@@ -41,7 +40,7 @@ public class TableJsonActionTest {
 		assertTrue(json.contains("{\"name\":\"X\",\"type\":\"COUNTER\",\"counter\":2,\"total\":\"\",\"min\":1,\"mean\":\"\",\"last\":\"\",\"max\":4"));
 		// Test JSON format with an external library
 		JSONTokener jsonTokener = new JSONTokener(json);
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
 		names.add("A");
 		names.add("B");
 		names.add("C");
@@ -58,15 +57,5 @@ public class TableJsonActionTest {
 			}
 		}
 		assertTrue(names.isEmpty());
-	}
-	@Test
-	public void testReset() throws Exception {
-		SimonManager.getSimon("B").reset();
-		TestActionContext context = new TestActionContext("/data/table.json");
-		TableJsonAction action = new TableJsonAction(context);
-		action.readParameters();
-		action.execute();
-		String json = context.toString();
-		assertTrue(json.contains("{\"name\":\"B\",\"type\":\"STOPWATCH\",\"counter\":0,\"total\":0,\"min\":\"\",\"mean\":0,\"last\":100,\"max\":0,\"standardDeviation\":\"\""));
 	}
 }

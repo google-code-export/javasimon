@@ -2,6 +2,7 @@ package org.javasimon.callback;
 
 import org.javasimon.Counter;
 import org.javasimon.CounterSample;
+import org.javasimon.Manager;
 import org.javasimon.Simon;
 import org.javasimon.SimonPattern;
 import org.javasimon.Split;
@@ -38,7 +39,7 @@ public final class CompositeFilterCallback implements FilterCallback, CompositeC
 
 	/** Constructs composite filter callback. */
 	public CompositeFilterCallback() {
-		rules = new EnumMap<Event, List<FilterRule>>(Event.class);
+		rules = new EnumMap<>(Event.class);
 		for (Event event : Event.values()) {
 			rules.put(event, new CopyOnWriteArrayList<FilterRule>());
 		}
@@ -65,20 +66,13 @@ public final class CompositeFilterCallback implements FilterCallback, CompositeC
 	}
 
 	@Override
-	public void initialize() {
-		callback.initialize();
+	public void initialize(Manager manager) {
+		callback.initialize(manager);
 	}
 
 	@Override
 	public void cleanup() {
 		callback.cleanup();
-	}
-
-	@Override
-	public void onSimonReset(Simon simon) {
-		if (rulesApplyTo(simon, Event.RESET)) {
-			callback.onSimonReset(simon);
-		}
 	}
 
 	@Override

@@ -1,21 +1,11 @@
 archivesBaseName = 'javasimon-examples'
 
-String jdkVersion = getJdkVersion()
-
-String jdbcDependencyName = getJdbcDependencyName(jdkVersion)
-
-sourceCompatibility = jdkVersion
-targetCompatibility = jdkVersion
-
-compileJava {
-    options.compilerArgs << '-bootclasspath' << getBootstrapPath(jdkVersion)
-    options.fork = true
-    options.forkOptions.executable = 'javac'
-}
-
 dependencies {
     compile project(':core')
-    compile project(jdbcDependencyName)
+    compile project(':console-embed')
+    compile project(':jdbc41')
+    compile 'org.eclipse.jetty:jetty-deploy:7.5.4.v20111024'
+    compile 'org.jolokia:jolokia-jvm:1.2.0'
     compile libs.h2
 }
 

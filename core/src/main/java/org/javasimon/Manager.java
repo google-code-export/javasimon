@@ -1,6 +1,7 @@
 package org.javasimon;
 
 import org.javasimon.callback.CompositeCallback;
+import org.javasimon.clock.Clock;
 
 import java.util.Collection;
 
@@ -19,7 +20,7 @@ import java.util.Collection;
  *
  * @author <a href="mailto:virgo47@gmail.com">Richard "Virgo" Richter</a>
  */
-public interface Manager {
+public interface Manager extends Clock {
 
 	/** Name of the root Simon. */
 	String ROOT_SIMON_NAME = "";
@@ -72,7 +73,7 @@ public interface Manager {
 
 	/**
 	 * Returns collection containing all existing Simons accepted by specified {@link SimonFilter}.
-	 * If {@code null} pattern is provided all Simons are returned in an unmodifiable Collection.
+	 * If {@code null} filter is provided all Simons are returned in an unmodifiable Collection.
 	 * Otherwise new collection with matching Simons is returned.
 	 *
 	 * @param simonFilter filter accepting the Simons to result collection

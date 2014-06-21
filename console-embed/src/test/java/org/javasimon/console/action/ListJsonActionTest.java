@@ -1,19 +1,18 @@
 package org.javasimon.console.action;
 
-import java.util.HashSet;
-import java.util.Set;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import org.javasimon.console.SimonData;
 import org.javasimon.console.TestActionContext;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Unit test for {@link ListJsonAction}
@@ -21,6 +20,7 @@ import static org.testng.Assert.assertTrue;
  * @author gquintana
  */
 public class ListJsonActionTest {
+
 	@BeforeClass
 	public static void setUpClass() {
 		SimonData.initialize();
@@ -36,7 +36,7 @@ public class ListJsonActionTest {
 		String json = context.toString();
 		// Test JSON format with an external library
 		JSONTokener jsonTokener = new JSONTokener(json);
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
 		names.add("A");
 		names.add("B");
 		names.add("C");

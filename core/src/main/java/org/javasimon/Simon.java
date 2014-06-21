@@ -38,6 +38,14 @@ public interface Simon extends HasAttributes {
 	List<Simon> getChildren();
 
 	/**
+	 * Returns Simon's {@link Manager}.
+	 *
+	 * @return Simon's {@link Manager}
+	 * @since 3.5
+	 */
+	Manager getManager();
+
+	/**
 	 * Returns state of the Simon that can be enabled, disabled or inherited.
 	 *
 	 * @return state of the Simon
@@ -62,28 +70,6 @@ public interface Simon extends HasAttributes {
 	 * @return true, if the Simon is effectively enabled
 	 */
 	boolean isEnabled();
-
-	/**
-	 * Resets the Simon values related to the measuring, timestamps and so on - usage timestamps, state,
-	 * attributes are not affected. Timestamp of the last reset can be obtained by the method {@link #getLastReset()}.
-	 * Reset is performed even for disabled Simons.
-	 *
-	 * @deprecated will be removed in 4.0 - use {@link #sampleIncrement(Object)} for similar purposes
-	 */
-	@Deprecated
-	void reset();
-
-	/**
-	 * Returns ms timestamp of the last recent usage of the {@link #reset()} method on the Simon.
-	 * Returns 0 if {@code reset} was not called yet. This timestamp is useful for rate measuring
-	 * when reset is called on a regular basis - likely via {@link #sampleAndReset()}. While
-	 * client code could store the timestamp too it is not necessary with this method.
-	 *
-	 * @return ms timestamp of the last reset or 0 if reset was not called yet
-	 * @deprecated will be removed in 4.0
-	 */
-	@Deprecated
-	long getLastReset();
 
 	/**
 	 * Returns note for the Simon. Note enables Simon with an additional information in human
@@ -127,28 +113,18 @@ public interface Simon extends HasAttributes {
 	Sample sample();
 
 	/**
-	 * Samples Simon values and returns them in a Java Bean derived from Sample interface
-	 * and resets the Simon. Operation is synchronized to assure atomicity.
-	 *
-	 * @return sample containing all Simon values
-	 * @deprecated will be removed in 4.0 - use {@link #sampleIncrement(Object)} instead
-	 */
-	@Deprecated
-	Sample sampleAndReset();
-
-	/**
 	 * Samples increment in Simon values since the previous call of this method with the
 	 * same key. When the method is called the first time for the key, current values
 	 * are returned (same like from {@link #sample()}. Any subsequent calls with the key
 	 * provide increments.
 	 * <p/>
-	 * Clients can use any key (any Object) which enables safe access to their own increments.
+	 * Clients can use any sampling key (any Object) which enables safe access to their own increments.
 	 * Using String does not guarantee this as any client can potentially guess the key. This
 	 * may or may not be an issue.
 	 *
-	 *
-	 * @param key key used to access incremental sample
+	 * @param key sampling key used to access incremental sample
 	 * @return {@link org.javasimon.Sample} with value increments
+	 * @since 3.5
 	 */
 	Sample sampleIncrement(Object key);
 
@@ -157,8 +133,9 @@ public interface Simon extends HasAttributes {
 	 * Next call to {@link #sampleIncrement(Object)} for the key will be considered the first
 	 * call for the key.
 	 *
-	 * @param key key used to access incremental sample
+	 * @param key sampling key used to access incremental sample
 	 * @return true if incremental information for the key existed, false otherwise
+	 * @since 3.5
 	 */
 	boolean stopIncrementalSampling(Object key);
 }

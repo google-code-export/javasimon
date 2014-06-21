@@ -42,10 +42,11 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 		}
 
 		long splitNs = split.runningFor();
+		long nowNanos = nanoTimeFromSplit(split, splitNs);
+
 		StopwatchSample sample = null;
 		synchronized (this) {
 			// using parameter version saves one currentTimeMillis call
-			long nowNanos = split.getStart() + splitNs;
 			updateUsagesNanos(nowNanos);
 			addSplit(splitNs);
 			if (!manager.callback().callbacks().isEmpty()) {
@@ -55,6 +56,14 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 		}
 		manager.callback().onStopwatchAdd(this, split, sample);
 		return this;
+	}
+
+	private long nanoTimeFromSplit(Split split, long splitNs) {
+		if (split.getStopwatch() != null) {
+			return split.getStart() + splitNs;
+		} else {
+			return manager.nanoTime();
+		}
 	}
 
 	private void updateIncrementalSimons(long splitNs, long nowNanos) {
@@ -71,16 +80,16 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 	@Override
 	public Split start() {
 		if (!enabled) {
-			return new Split(this);
+			return new Split(this, manager);
 		}
 
-		long nowNanos = System.nanoTime();
+		long nowNanos = manager.nanoTime();
 		Split split;
 		synchronized (this) {
 			updateUsagesNanos(nowNanos);
 			activeStart();
 		}
-		split = new Split(this, nowNanos);
+		split = new Split(this, manager, nowNanos);
 		manager.callback().onStopwatchStart(split);
 		return split;
 	}
@@ -227,28 +236,6 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 	}
 
 	@Override
-	void concreteReset() {
-		total = 0;
-		counter = 0;
-		max = 0;
-		min = Long.MAX_VALUE;
-		maxTimestamp = 0;
-		minTimestamp = 0;
-		// active is not reset, because active Splits do not know about this reset
-		maxActive = active;
-		maxActiveTimestamp = 0;
-		mean = 0;
-		mean2 = 0;
-	}
-
-	@Override
-	public synchronized StopwatchSample sampleAndReset() {
-		StopwatchSample sample = sample();
-		reset();
-		return sample;
-	}
-
-	@Override
 	public synchronized StopwatchSample sample() {
 		StopwatchSample sample = new StopwatchSample();
 		sample.setTotal(total);
@@ -271,7 +258,7 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 
 	@Override
 	public synchronized StopwatchSample sampleIncrement(Object key) {
-		return (StopwatchSample) sampleIncrementHelper(key, new StopwatchImpl(null, null));
+		return (StopwatchSample) sampleIncrementHelper(key, new StopwatchImpl(null, manager));
 	}
 
 	/**
@@ -281,7 +268,7 @@ final class StopwatchImpl extends AbstractSimon implements Stopwatch {
 	 * @param nowNanos current value of nano timer
 	 */
 	private void updateUsagesNanos(long nowNanos) {
-		updateUsages(SimonUtils.millisForNano(nowNanos));
+		updateUsages(manager.millisForNano(nowNanos));
 	}
 
 	/**

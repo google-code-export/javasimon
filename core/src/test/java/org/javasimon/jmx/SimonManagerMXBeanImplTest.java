@@ -1,28 +1,29 @@
 package org.javasimon.jmx;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.javasimon.Counter;
-import org.javasimon.Manager;
-import org.javasimon.Simon;
-import org.javasimon.SimonPattern;
-import org.javasimon.Stopwatch;
-
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+
+import org.javasimon.Counter;
+import org.javasimon.Manager;
+import org.javasimon.Simon;
+import org.javasimon.SimonException;
+import org.javasimon.SimonPattern;
+import org.javasimon.SimonState;
+import org.javasimon.Stopwatch;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Unit test for {@link SimonManagerMXBeanImpl}.
  *
  * @author gerald
+ * @author <a href="mailto:ivan.mushketyk@gmail.com">Ivan Mushketyk</a>
  */
 public class SimonManagerMXBeanImplTest {
 
@@ -47,9 +48,16 @@ public class SimonManagerMXBeanImplTest {
 		stopwatchA = createStopwatch("base.stopwatch.aaa", 1);
 		stopwatchB = createStopwatch("base.stopwatch.bbb", 2);
 
-		when(manager.getSimons(SimonPattern.create(COUNTER_PATTERN))).thenReturn(Arrays.<Simon>asList(counterA));
-		when(manager.getSimons(SimonPattern.create(STOPWATCH_PATTERN))).thenReturn(Arrays.<Simon>asList(stopwatchA));
-		when(manager.getSimons(null)).thenReturn(Arrays.asList(counterA, counterB, stopwatchA, stopwatchB));
+		when(manager.getSimons(SimonPattern.createForCounter(null)))
+			.thenReturn(Arrays.<Simon>asList(counterA, counterB));
+		when(manager.getSimons(SimonPattern.createForStopwatch(null)))
+			.thenReturn(Arrays.<Simon>asList(stopwatchA, stopwatchB));
+		when(manager.getSimons(SimonPattern.createForCounter(COUNTER_PATTERN)))
+			.thenReturn(Arrays.<Simon>asList(counterA));
+		when(manager.getSimons(SimonPattern.createForStopwatch(STOPWATCH_PATTERN)))
+			.thenReturn(Arrays.<Simon>asList(stopwatchA));
+		when(manager.getSimons(null))
+			.thenReturn(Arrays.asList(counterA, counterB, stopwatchA, stopwatchB));
 	}
 
 	private Counter createCounter(String name, long counterVal) {
@@ -80,7 +88,6 @@ public class SimonManagerMXBeanImplTest {
 		return sample;
 	}
 
-	/** Test {@link SimonManagerMXBeanImpl#getCounterSamples(java.lang.String)}. */
 	@Test
 	public void testGetCounterSamples() {
 		List<CounterSample> samples = managerMXBean.getCounterSamples();
@@ -101,7 +108,6 @@ public class SimonManagerMXBeanImplTest {
 		assertEquals(samples.get(0).getCounter(), 1);
 	}
 
-	/** Test {@link SimonManagerMXBeanImpl#getStopwatchSamples(java.lang.String)}. */
 	@Test
 	public void testGetStopwatchSamples() throws InterruptedException {
 		List<StopwatchSample> samples = managerMXBean.getStopwatchSamples();
@@ -120,18 +126,6 @@ public class SimonManagerMXBeanImplTest {
 
 		assertEquals(samples.size(), 1);
 		assertEquals(samples.get(0).getCounter(), 1);
-	}
-
-	@Test
-	public void testGetIncrementNonExistingCounter() {
-		CounterSample sample = managerMXBean.getIncrementCounterSample("nonExistingCounter", "key");
-		assertNull(sample);
-	}
-
-	@Test
-	public void testGetIncrementNotCounter() {
-		CounterSample sample = managerMXBean.getIncrementCounterSample("base.stopwatch.aaa", "key");
-		assertNull(sample);
 	}
 
 	@Test
@@ -180,18 +174,6 @@ public class SimonManagerMXBeanImplTest {
 	}
 
 	@Test
-	public void testGetIncrementNonExistingStopwatch() {
-		StopwatchSample sample = managerMXBean.getIncrementStopwatchSample("nonExistingStopwatch", "key");
-		assertNull(sample);
-	}
-
-	@Test
-	public void testGetIncrementNotStopwatch() {
-		StopwatchSample sample = managerMXBean.getIncrementStopwatchSample("base.counter.aaa", "key");
-		assertNull(sample);
-	}
-
-	@Test
 	public void testGetIncrementStopwatchSamplesWithExistingSample() {
 		String key = "key";
 		when(stopwatchA.sampleIncrement(key)).thenReturn(stopwatchSample(2));
@@ -214,5 +196,79 @@ public class SimonManagerMXBeanImplTest {
 
 		verify(stopwatchA).sampleIncrement(key);
 		verify(stopwatchB).sampleIncrement(key);
+	}
+
+	@Test
+	public void testEnableSimon() {
+		managerMXBean.enableSimon("base.counter.aaa");
+		verify(counterA).setState(SimonState.ENABLED, false);
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void testEnableNonExistingSimon() {
+		managerMXBean.enableSimon("non.existing");
+	}
+
+	@Test
+	public void testDisableSimon() {
+		managerMXBean.disableSimon("base.counter.aaa");
+		verify(counterA).setState(SimonState.DISABLED, false);
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void testDisableNonExistingSimon() {
+		managerMXBean.disableSimon("non.existing");
+	}
+
+	@Test
+	public void testInheritState() {
+		managerMXBean.inheritState("base.counter.aaa");
+		verify(counterA).setState(SimonState.INHERIT, false);
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void testSetInheritStateForNonExistingSimon() {
+		managerMXBean.inheritState("non.existing");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void getCounterSampleForNonExistingSimon() {
+		managerMXBean.getCounterSample("non.existing");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Wrong Simon type")
+	public void getCounterSampleForWrongType() {
+		managerMXBean.getCounterSample("base.stopwatch.aaa");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void getIncrementCounterSampleForNonExistingSimon() {
+		managerMXBean.getIncrementCounterSample("non.existing", "key");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Wrong Simon type")
+	public void getIncrementCounterSampleForWrongType() {
+		managerMXBean.getIncrementCounterSample("base.stopwatch.aaa", "key");
+	}
+
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void getStopwatchSampleForNonExistingSimon() {
+		managerMXBean.getStopwatchSample("non.existing");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Wrong Simon type")
+	public void getStopwatchSampleForWrongType() {
+		managerMXBean.getStopwatchSample("base.counter.aaa");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Unknown Simon.*")
+	public void getIncrementStopwatchSampleForNonExistingSimon() {
+		managerMXBean.getIncrementStopwatchSample("non.existing", "key");
+	}
+
+	@Test(expectedExceptions = SimonException.class, expectedExceptionsMessageRegExp = "Wrong Simon type")
+	public void getIncrementStopwatchSampleForWrongType() {
+		managerMXBean.getIncrementStopwatchSample("base.counter.aaa", "key");
 	}
 }

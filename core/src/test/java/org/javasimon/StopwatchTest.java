@@ -1,6 +1,6 @@
 package org.javasimon;
 
-import org.javasimon.utils.SimonUtils;
+import org.javasimon.clock.TestClock;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -25,7 +25,11 @@ public final class StopwatchTest extends SimonUnitTest {
 
 	@Test
 	public void usagesTest() throws Exception {
-		Stopwatch stopwatch = SimonManager.getStopwatch(null);
+		TestClock clock = new TestClock();
+		clock.setMillisNanosFollow(10);
+		EnabledManager manager = new EnabledManager(clock);
+
+		Stopwatch stopwatch = manager.getStopwatch(null);
 		Assert.assertEquals(stopwatch.getFirstUsage(), 0);
 		Assert.assertEquals(stopwatch.getLastUsage(), 0);
 		Split split = stopwatch.start();
@@ -33,56 +37,12 @@ public final class StopwatchTest extends SimonUnitTest {
 		split.stop();
 		assertStopwatchAndSampleAreEqual(stopwatch);
 		Assert.assertTrue(stopwatch.getFirstUsage() <= stopwatch.getLastUsage());
-		Thread.sleep(20);
+
+		clock.setMillisNanosFollow(30);
+
 		stopwatch.addSplit(Split.create(0));
 		Assert.assertTrue(stopwatch.getFirstUsage() < stopwatch.getLastUsage());
 		assertStopwatchAndSampleAreEqual(stopwatch);
-	}
-
-	// remove in 4.0
-	@Test
-	@Deprecated
-	public void resetTest() throws Exception {
-		// with raw current millis this test is unstable - this is not a problem in real-life situations though
-		// point is to check that timestamps are set, not that they are set off by 1 ms or so
-		long ts = SimonUtils.millisForNano(System.currentTimeMillis());
-		Stopwatch stopwatch = SimonManager.getStopwatch(null);
-		stopwatch.reset();
-		stopwatch.addSplit(Split.create(100));
-		Assert.assertEquals(stopwatch.getTotal(), 100);
-		Assert.assertEquals(stopwatch.getMax(), 100);
-		Assert.assertEquals(stopwatch.getMin(), 100);
-		long maxTimestamp = stopwatch.getMaxTimestamp();
-//		Assert.assertTrue(maxTimestamp >= ts, "maxTimestamp=" + maxTimestamp + ", ts=" + ts);
-		Assert.assertEquals(stopwatch.getMinTimestamp(), maxTimestamp);
-		Assert.assertEquals(stopwatch.getLastUsage(), maxTimestamp);
-		Assert.assertEquals(stopwatch.getFirstUsage(), maxTimestamp);
-		Assert.assertEquals(stopwatch.getCounter(), 1);
-		StopwatchSample sample = stopwatch.sample();
-		Assert.assertEquals(sample.getName(), stopwatch.getName());
-		Assert.assertEquals(sample.getCounter(), 1);
-		Assert.assertEquals(sample.getTotal(), 100);
-		Assert.assertEquals(sample.getMean(), 100d);
-		Assert.assertEquals(sample.getStandardDeviation(), 0d);
-		Assert.assertEquals(sample.getVariance(), 0d);
-		Assert.assertEquals(sample.getVarianceN(), 0d);
-
-		stopwatch.reset();
-		Assert.assertEquals(stopwatch.getTotal(), 0);
-		Assert.assertEquals(stopwatch.getMax(), 0);
-		Assert.assertEquals(stopwatch.getMin(), Long.MAX_VALUE);
-		Assert.assertEquals(stopwatch.getMaxTimestamp(), 0);
-		Assert.assertEquals(stopwatch.getMinTimestamp(), 0);
-//		Assert.assertTrue(stopwatch.getLastUsage() >= ts); // usages are NOT clear!
-//		Assert.assertTrue(stopwatch.getFirstUsage() >= ts);
-		Assert.assertEquals(stopwatch.getCounter(), 0);
-		sample = stopwatch.sample();
-		Assert.assertEquals(sample.getCounter(), 0);
-		Assert.assertEquals(sample.getTotal(), 0);
-		Assert.assertEquals(sample.getMean(), 0d);
-		Assert.assertEquals(sample.getStandardDeviation(), Double.NaN);
-		Assert.assertEquals(sample.getVariance(), Double.NaN);
-		Assert.assertEquals(sample.getVarianceN(), Double.NaN);
 	}
 
 	@Test

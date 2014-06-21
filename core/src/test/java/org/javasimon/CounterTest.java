@@ -1,5 +1,6 @@
 package org.javasimon;
 
+import org.javasimon.clock.TestClock;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -59,10 +60,16 @@ public final class CounterTest extends SimonUnitTest {
 
 	@Test
 	public void increaseDecrease() throws InterruptedException {
-		Counter counter = SimonManager.getCounter(null);
+		TestClock testClock = new TestClock();
+		EnabledManager manager = new EnabledManager(testClock);
+		Counter counter = manager.getCounter(null);
+
+		testClock.setMillisNanosFollow(10);
 		counter.increase();
-		Thread.sleep(20); // just to assure system ms are changed
+
+		testClock.setMillisNanosFollow(30);
 		counter.decrease();
+
 		Assert.assertEquals(counter.getCounter(), 0);
 		Assert.assertEquals(counter.getIncrementSum(), 1);
 		Assert.assertEquals(counter.getDecrementSum(), 1);

@@ -22,6 +22,9 @@ public final class SimonPattern implements SimonFilter {
 
 	private static final String WILDCARD_STAR = "*";
 
+	/** Expected Simon type. */
+	private final Class<? extends Simon> expectedType;
+
 	/** Original pattern from the configuration. */
 	private String pattern;
 
@@ -49,7 +52,37 @@ public final class SimonPattern implements SimonFilter {
 		if (pattern == null) {
 			return null;
 		}
-		return new SimonPattern(pattern);
+
+		return createForType(pattern, Simon.class);
+	}
+
+	private static SimonPattern createForType(String pattern, Class<? extends Simon> expectedType) {
+		if (pattern == null) {
+			return new SimonPattern("*", expectedType);
+		}
+		return new SimonPattern(pattern, expectedType);
+	}
+
+	/**
+	 * Factory method that creates Counter name pattern - or returns a pattern
+	 * that accepts all Counters if parameter is {@code null}.
+	 *
+	 * @param pattern Counter name pattern as string
+	 * @return Counter name pattern
+	 */
+	public static SimonPattern createForCounter(String pattern) {
+		return createForType(pattern, Counter.class);
+	}
+
+	/**
+	 * Factory method that creates Stopwatch name pattern - or returns a pattern
+	 * that accepts all Stopwatches if parameter is {@code null}.
+	 *
+	 * @param pattern Stopwatch name pattern as string
+	 * @return Stopwatch name pattern
+	 */
+	public static SimonPattern createForStopwatch(String pattern) {
+		return createForType(pattern, Stopwatch.class);
 	}
 
 	/**
@@ -59,7 +92,21 @@ public final class SimonPattern implements SimonFilter {
 	 * @throws SimonException if pattern is not valid (runtime exception)
 	 */
 	public SimonPattern(String pattern) {
+		this(pattern, Simon.class);
+	}
+
+	/**
+	 * Creates Simon pattern that used to match Simons of specified type with names that correspond to
+	 * the pattern.
+	 *
+	 * @param pattern Simon name pattern
+	 * @param expectedType expected type of Simon
+	 * @throws SimonException if pattern is not valid (runtime exception)
+	 */
+	public SimonPattern(String pattern, Class<? extends Simon> expectedType) {
+		this.expectedType = expectedType;
 		this.pattern = pattern;
+
 		if (!pattern.contains(WILDCARD_STAR)) {
 			// no wildcard, we're going for complete match (all)
 			all = pattern;
@@ -104,9 +151,12 @@ public final class SimonPattern implements SimonFilter {
 	 * @param simon Simon to be tested
 	 * @return true if Simon's name matches this pattern
 	 */
-	public boolean accept(Simon simon)
-	{
-		return matches(simon.getName());
+	public boolean accept(Simon simon) {
+		return isCorrectType(simon) && matches(simon.getName());
+	}
+
+	private boolean isCorrectType(Simon simon) {
+		return expectedType.isInstance(simon);
 	}
 
 	/**
@@ -142,16 +192,29 @@ public final class SimonPattern implements SimonFilter {
 
 		SimonPattern that = (SimonPattern) o;
 
-		return !(pattern != null ? !pattern.equals(that.pattern) : that.pattern != null);
+		if (pattern != null ? !pattern.equals(that.pattern) : that.pattern != null) {
+			return false;
+		}
+
+		if (expectedType != null ? !expectedType.equals(that.expectedType) : that.expectedType != null) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return (pattern != null ? pattern.hashCode() : 0);
+		int result = expectedType != null ? expectedType.hashCode() : 0;
+		result = 31 * result + (pattern != null ? pattern.hashCode() : 0);
+		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "ConfigPattern: " + pattern;
+		return "SimonPattern {" +
+				"pattern='" + pattern + '\'' +
+				", expectedType=" + expectedType +
+				'}';
 	}
 }

@@ -23,18 +23,18 @@ public class SimonVisitors {
 
 	/**
 	 * Visit simons as a list.
-	 * Calls {@link  Manager#getSimons(org.javasimon.SimonPattern)} method
+	 * Calls {@link  Manager#getSimons(org.javasimon.SimonFilter)} method
 	 * then Simons are sorted by name and filtered by type
 	 * finally the visitor is called on each of them.
 	 *
 	 * @param manager Simon manager
 	 * @param pattern Pattern
-	 * @param type Type
+	 * @param types set of Simon types
 	 * @param visitor Visitor
 	 * @throws IOException
 	 */
 	public static void visitList(Manager manager, String pattern, Set<SimonType> types, SimonVisitor visitor) throws IOException {
-		List<Simon> simons = new ArrayList<Simon>(manager.getSimons(SimonPattern.create(pattern)));
+		List<Simon> simons = new ArrayList<>(manager.getSimons(SimonPattern.create(pattern)));
 		Collections.sort(simons, new Comparator<Simon>() {
 			public int compare(Simon s1, Simon s2) {
 				return s1.getName().compareTo(s2.getName());

@@ -3,7 +3,7 @@ package org.javasimon.callback.quantiles;
 import org.javasimon.Simon;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
-import org.javasimon.utils.SimonUtils;
+import org.javasimon.clock.ClockUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +31,10 @@ import java.util.List;
  * </li></ol>
  *
  * @author gquintana
- * @noinspection UnusedDeclaration
  * @see Buckets
  * @since 3.2
  */
+@SuppressWarnings("UnusedDeclaration")
 public class AutoQuantilesCallback extends QuantilesCallback {
 
 	/** Simon attribute name of the list of split values stored in Simons before warmup time. */
@@ -80,7 +80,7 @@ public class AutoQuantilesCallback extends QuantilesCallback {
 		synchronized (stopwatch) {
 			List<Long> values = getBucketsValues(stopwatch);
 			if (values == null) {
-				values = new ArrayList<Long>((int) warmupCounter);
+				values = new ArrayList<>((int) warmupCounter);
 				stopwatch.setAttribute(ATTR_NAME_BUCKETS_VALUES, values);
 			}
 			return values;
@@ -113,10 +113,10 @@ public class AutoQuantilesCallback extends QuantilesCallback {
 		// Compute min
 		long min = stopwatch.getMin() * 90L / 100L; // min -10%
 		min = Math.max(0, min); // no negative mins
-		min = (min / SimonUtils.NANOS_IN_MILLIS) * SimonUtils.NANOS_IN_MILLIS; // round to lower millisecond
+		min = (min / ClockUtils.NANOS_IN_MILLIS) * ClockUtils.NANOS_IN_MILLIS; // round to lower millisecond
 		// Compute max
 		long max = (stopwatch.getMax() * 110L) / 100L; // max +10%
-		max = (max / SimonUtils.NANOS_IN_MILLIS + 1) * SimonUtils.NANOS_IN_MILLIS; // round to upper millisecond
+		max = (max / ClockUtils.NANOS_IN_MILLIS + 1) * ClockUtils.NANOS_IN_MILLIS; // round to upper millisecond
 		return createBuckets(stopwatch, min, max, bucketNb);
 	}
 
@@ -159,27 +159,6 @@ public class AutoQuantilesCallback extends QuantilesCallback {
 			// Warm
 			buckets.addValue(value);
 			buckets.log(split);
-		}
-	}
-
-	/** When the Stopwatch is reset, so are the buckets. */
-	@Override
-	@Deprecated
-	public void onSimonReset(Simon simon) {
-		if (simon instanceof Stopwatch) {
-			Stopwatch stopwatch = (Stopwatch) simon;
-			Buckets buckets = getBuckets(stopwatch);
-			if (buckets == null) {
-				// Cold
-				List<Long> values = getBucketsValues(stopwatch);
-				if (values != null) {
-					// Warming up
-					values.clear();
-				}
-			} else {
-				// Warm
-				buckets.clear();
-			}
 		}
 	}
 }

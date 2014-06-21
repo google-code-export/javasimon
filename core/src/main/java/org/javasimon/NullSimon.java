@@ -1,5 +1,7 @@
 package org.javasimon;
 
+import org.javasimon.clock.Clock;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,11 @@ class NullSimon implements Simon {
 	}
 
 	@Override
+	public Manager getManager() {
+		return null;
+	}
+
+	@Override
 	public SimonState getState() {
 		return null;
 	}
@@ -52,16 +59,6 @@ class NullSimon implements Simon {
 	@Override
 	public boolean isEnabled() {
 		return false;
-	}
-
-	@Override
-	public void reset() {
-		// nothing to do
-	}
-
-	@Override
-	public long getLastReset() {
-		return 0;
 	}
 
 	@Override
@@ -95,11 +92,6 @@ class NullSimon implements Simon {
 
 	@Override
 	public Sample sample() {
-		return null;
-	}
-
-	@Override
-	public Sample sampleAndReset() {
 		return null;
 	}
 
@@ -200,7 +192,7 @@ final class NullStopwatch extends NullSimon implements Stopwatch {
 	 */
 	static final NullStopwatch INSTANCE = new NullStopwatch();
 
-	private static final Split NULL_SPLIT = new Split(INSTANCE);
+	private static final Split NULL_SPLIT = new Split(INSTANCE, Clock.SYSTEM);
 
 	private NullStopwatch() {
 	}
@@ -311,11 +303,6 @@ final class NullStopwatch extends NullSimon implements Stopwatch {
 	}
 
 	@Override
-	public StopwatchSample sampleAndReset() {
-		return null;
-	}
-
-	@Override
 	public StopwatchSample sampleIncrement(Object key) {
 		return null;
 	}
@@ -400,11 +387,6 @@ final class NullCounter extends NullSimon implements Counter {
 
 	@Override
 	public CounterSample sample() {
-		return null;
-	}
-
-	@Override
-	public CounterSample sampleAndReset() {
 		return null;
 	}
 

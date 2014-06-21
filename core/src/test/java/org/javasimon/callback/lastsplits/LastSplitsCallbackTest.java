@@ -8,7 +8,6 @@ import org.javasimon.Manager;
 import org.javasimon.SimonUnitTest;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -19,14 +18,10 @@ public class LastSplitsCallbackTest extends SimonUnitTest {
 
 	private Manager manager = new EnabledManager();
 
-	@BeforeClass
-	public void addCallback() {
-		manager.callback().addCallback(new LastSplitsCallback(5));
-	}
-
 	@BeforeMethod
-	public void resetStopwatch() {
-		getStopwatch().reset();
+	public void resetManager() {
+		manager.clear();
+		manager.callback().addCallback(new LastSplitsCallback(5));
 	}
 
 	@Test
@@ -48,7 +43,7 @@ public class LastSplitsCallbackTest extends SimonUnitTest {
 		addSplit(150L);
 		LastSplits lastSplits = getLastSplits();
 		assertTrue(lastSplits.getTrend() > 0, "Positive trend");
-		resetStopwatch();
+		resetManager();
 		addSplit(150L);
 		addSplit(125L);
 		addSplit(100L);
@@ -65,6 +60,6 @@ public class LastSplitsCallbackTest extends SimonUnitTest {
 	}
 
 	private void addSplit(long length) {
-		getStopwatch().addSplit(Split.create(length));
+		getStopwatch().addSplit(Split.create(length, manager));
 	}
 }

@@ -2,6 +2,7 @@ package org.javasimon;
 
 import org.javasimon.callback.CompositeCallback;
 import org.javasimon.callback.CompositeCallbackImpl;
+import org.javasimon.clock.Clock;
 import org.javasimon.utils.SimonUtils;
 
 import java.lang.reflect.Constructor;
@@ -20,20 +21,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class EnabledManager implements Manager {
 
-	private final Map<String, AbstractSimon> allSimons = new ConcurrentHashMap<String, AbstractSimon>();
-
 	private UnknownSimon rootSimon;
 
-	private CompositeCallback callback = new CompositeCallbackImpl();
+	private final Map<String, AbstractSimon> allSimons = new ConcurrentHashMap<>();
 
-	private ManagerConfiguration configuration;
+	private final CompositeCallback callback = new CompositeCallbackImpl();
+
+	private final ManagerConfiguration configuration;
+
+	private final Clock clock;
 
 	/** Creates new enabled manager. */
 	public EnabledManager() {
+		this(Clock.SYSTEM);
+	}
+
+	public EnabledManager(Clock clock) {
+		this.clock = clock;
 		rootSimon = new UnknownSimon(ROOT_SIMON_NAME, this);
 		allSimons.put(ROOT_SIMON_NAME, rootSimon);
 		configuration = new ManagerConfiguration(this);
-		callback.initialize();
+		callback.initialize(this);
 	}
 
 	@Override
@@ -89,7 +97,7 @@ public final class EnabledManager implements Manager {
 		if (simonFilter == null) {
 			return Collections.unmodifiableCollection((Collection) allSimons.values());
 		}
-		Collection<Simon> simons = new ArrayList<Simon>();
+		Collection<Simon> simons = new ArrayList<>();
 		for (AbstractSimon simon : allSimons.values()) {
 			if (simonFilter.accept(simon)) {
 				simons.add(simon);
@@ -238,5 +246,29 @@ public final class EnabledManager implements Manager {
 	@Override
 	public void warning(String warning, Exception cause) {
 		callback.onManagerWarning(warning, cause);
+	}
+
+	@Override
+	public long nanoTime() {
+		return clock.nanoTime();
+	}
+
+	@Override
+	public long milliTime() {
+		return clock.milliTime();
+	}
+
+	@Override
+	public long millisForNano(long nanos) {
+		return clock.millisForNano(nanos);
+	}
+
+	synchronized void purgeIncrementalSimonsOlderThan(long thresholdMs) {
+		for (Simon simon : allSimons.values()) {
+			if (simon instanceof AbstractSimon) {
+				AbstractSimon abstractSimon = (AbstractSimon) simon;
+				abstractSimon.purgeIncrementalSimonsOlderThan(thresholdMs);
+			}
+		}
 	}
 }

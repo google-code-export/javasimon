@@ -1,6 +1,7 @@
 package org.javasimon.jmx;
 
 import org.javasimon.Counter;
+import org.javasimon.Manager;
 import org.javasimon.Simon;
 import org.javasimon.Stopwatch;
 import org.javasimon.callback.CallbackSkeleton;
@@ -30,7 +31,13 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 	/** MBean server instance specified for this callback (or default platform one) - protected for subclasses. */
 	protected MBeanServer mBeanServer;
 
-	private Set<String> registeredNames = new HashSet<String>();
+	/** Names of all beans registered for separate Simons */
+	private Set<String> registeredNames = new HashSet<>();
+
+	/** Whether all existing Simons from Manager should be registered after callback is added to a Manager. */
+	private boolean registerExisting;
+
+	private Manager manager;
 
 	/**
 	 * Default constructor uses default MBeanServer.
@@ -51,6 +58,19 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 		assert domain != null && !(domain.isEmpty());
 		this.mBeanServer = mBeanServer;
 		this.domain = domain;
+	}
+
+	@Override
+	public synchronized void initialize(Manager manager) {
+		if (this.manager != null) {
+			throw new IllegalStateException("Callback was already initialized");
+		}
+		this.manager = manager;
+		if (registerExisting) {
+			for (Simon simon : manager.getSimons(null)) {
+				register(simon);
+			}
+		}
 	}
 
 	/**
@@ -74,6 +94,10 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 	@Override
 	public final void onSimonDestroyed(Simon simon) {
 		String name = constructObjectName(simon);
+		unregisterSimon(name);
+	}
+
+	private synchronized void unregisterSimon(String name) {
 		try {
 			ObjectName objectName = new ObjectName(name);
 			mBeanServer.unregisterMBean(objectName);
@@ -87,6 +111,11 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 	/** When the manager is cleared, all MX beans for its Simons are unregistered. */
 	@Override
 	public final void onManagerClear() {
+		unregisterAllSimons();
+	}
+
+	/** Unregister all previously registered Simons. */
+	private synchronized void unregisterAllSimons() {
 		Iterator<String> namesIter = registeredNames.iterator();
 		while (namesIter.hasNext()) {
 			String name = namesIter.next();
@@ -102,6 +131,11 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 		}
 	}
 
+	/** Stop operation and clear all registered beans. Callback should be removed from Simon Manager. */
+	public void cleanup() {
+		unregisterAllSimons();
+	}
+
 	/**
 	 * Method registering Simon MX Bean - can not be overridden, but can be used in subclasses.
 	 *
@@ -111,7 +145,11 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 	protected final void register(Simon simon) {
 		Object mBean = constructObject(simon);
 		String name = constructObjectName(simon);
-		if (mBean != null && name != null) {
+		registerSimonBean(mBean, name);
+	}
+
+	private synchronized void registerSimonBean(Object simonBean, String name) {
+		if (simonBean != null && name != null) {
 			try {
 				ObjectName objectName = new ObjectName(name);
 				if (mBeanServer.isRegistered(objectName)) {
@@ -119,7 +157,7 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 				} else {
 					registeredNames.add(name);
 				}
-				mBeanServer.registerMBean(mBean, objectName);
+				mBeanServer.registerMBean(simonBean, objectName);
 				onManagerMessage("Simon registered under the name: " + objectName);
 			} catch (JMException e) {
 				onManagerWarning("JMX registration failed for: " + name, e);
@@ -172,5 +210,23 @@ public class JmxRegisterCallback extends CallbackSkeleton {
 			type = SimonInfo.STOPWATCH;
 		}
 		return type;
+	}
+
+	String getDomain() {
+		return domain;
+	}
+
+	MBeanServer getBeanServer() {
+		return mBeanServer;
+	}
+
+	/**
+	 * If set to true before initialization callback registers all Simons already existing in the Manager
+	 * during initialization.
+	 *
+	 * @param registerExisting true if all already existing simons should be registered
+	 */
+	public void setRegisterExisting(boolean registerExisting) {
+		this.registerExisting = registerExisting;
 	}
 }
